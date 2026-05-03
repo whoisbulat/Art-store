@@ -1,0 +1,30 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h1>Редактировать страницу "Обо мне"</h1>
+<form method="POST" enctype="multipart/form-data">
+    <div>
+        <label>Биография</label>
+        <textarea name="bio" rows="8" style="width: 100%;">{{ about.bio }}</textarea>
+    </div>
+    <div>
+        <label>Email</label>
+        <input type="email" name="email" value="{{ about.email }}" style="width: 100%;">
+    </div>
+    <div>
+        <label>Instagram (ссылка)</label>
+        <input type="text" name="instagram" value="{{ about.instagram }}" style="width: 100%;">
+    </div>
+    <div>
+        <label>Telegram (ссылка)</label>
+        <input type="text" name="telegram" value="{{ about.telegram }}" style="width: 100%;">
+    </div>
+    <div>
+        <label>Фото профиля</label>
+        <input type="file" name="photo" accept="image/*">
+        {% if about.photo_filename %}
+            <p>Текущее: <img src="{{ url_for('static', filename='images/works/' + about.photo_filename) }}" width="80"></p>
+        {% endif %}
+    </div>
+    <button type="submit">Сохранить</button>
+</form>
+{% endblock %}

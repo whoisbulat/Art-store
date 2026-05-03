@@ -1,0 +1,39 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h1>{% if artwork %}Редактировать{% else %}Новая работа{% endif %}</h1>
+<form method="POST" enctype="multipart/form-data">
+    <div style="margin-bottom: 15px;">
+        <label>Название*</label><br>
+        <input type="text" name="title" value="{{ artwork.title if artwork else '' }}" required style="width: 100%; padding: 8px;">
+    </div>
+    <div style="margin-bottom: 15px;">
+        <label>Описание</label><br>
+        <textarea name="description" rows="4" style="width: 100%;">{{ artwork.description if artwork else '' }}</textarea>
+    </div>
+    <div style="margin-bottom: 15px;">
+        <label>Год</label><br>
+        <input type="number" name="year" value="{{ artwork.year if artwork else '' }}">
+    </div>
+    <div style="margin-bottom: 15px;">
+        <label>Категория*</label><br>
+        <select name="category" required>
+            <option value="oil" {% if artwork and artwork.category=='oil' %}selected{% endif %}>Oil painting</option>
+            <option value="mixed" {% if artwork and artwork.category=='mixed' %}selected{% endif %}>Mixed media & ceramics</option>
+            <option value="embroidery" {% if artwork and artwork.category=='embroidery' %}selected{% endif %}>Embroidery</option>
+        </select>
+    </div>
+    <div style="margin-bottom: 15px;">
+        <label>Техника (для керамики/смешанной техники)</label><br>
+        <input type="text" name="technique" value="{{ artwork.technique if artwork else '' }}">
+    </div>
+    <div style="margin-bottom: 15px;">
+        <label>Изображение {% if artwork %}(оставьте пустым, чтобы не менять){% endif %}</label><br>
+        <input type="file" name="image" accept="image/*">
+        {% if artwork %}
+            <p>Текущее: {{ artwork.image_filename }}</p>
+        {% endif %}
+    </div>
+    <button type="submit" style="background: #b8a99a; padding: 8px 20px; border: none; border-radius: 30px; cursor: pointer;">Сохранить</button>
+    <a href="{{ url_for('admin_dashboard') }}">Отмена</a>
+</form>
+{% endblock %}
