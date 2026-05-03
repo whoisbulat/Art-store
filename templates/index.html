@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ portfolio.name }} | Art Portfolio</title>
+    <!-- Импрессионистские шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Неоновая навигация -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">{{ portfolio.name }}</a>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#techniques">Techniques</a>
+                <a href="#art-store">Art store AID</a>
+                <a href="/contact">Contact</a>
+            </div>
+            <div class="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero секция -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="glow-text">
+                    <h1 class="hero-title">{{ portfolio.name }}</h1>
+                    <p class="hero-subtitle">{{ portfolio.title }}</p>
+                    <p class="hero-location"><i class="fas fa-map-marker-alt"></i> {{ portfolio.location }}</p>
+                    <div class="hero-greeting">{{ portfolio.greeting }}</div>
+                    <a href="#art-store" class="cta-button">View Artworks</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-overlay"></div>
+    </section>
+
+    <!-- About секция -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">About the artist</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>{{ portfolio.bio }}</p>
+                </div>
+                <div class="about-stats">
+                    <div class="stat">
+                        <span class="stat-number">10+</span>
+                        <span class="stat-label">Years of creation</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">Artworks</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">3</span>
+                        <span class="stat-label">Mediums</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Techniques секция (вместо навыков) -->
+    <section id="techniques" class="techniques-section">
+        <div class="container">
+            <h2 class="section-title">Art techniques</h2>
+            <div class="techniques-grid">
+                {% for tech in portfolio.techniques %}
+                <div class="technique-card">
+                    <div class="tech-info">
+                        <span class="tech-name">{{ tech.name }}</span>
+                        <span class="tech-percent">{{ tech.level }}%</span>
+                    </div>
+                    <div class="tech-bar">
+                        <div class="tech-progress" style="width: {{ tech.level }}%"></div>
+                    </div>
+                    <p class="tech-desc">{{ tech.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Art Store AID (галерея с фильтрами) -->
+    <section id="art-store" class="gallery-section">
+        <div class="container">
+            <h2 class="section-title">Art store · AID</h2>
+            <div class="gallery-filters">
+                <button class="filter-btn active" data-filter="all">All works</button>
+                <button class="filter-btn" data-filter="oil">Oil painting</button>
+                <button class="filter-btn" data-filter="mixed">Mixed media & ceramics</button>
+                <button class="filter-btn" data-filter="embroidery">Embroidery</button>
+            </div>
+            <div class="gallery-grid" id="gallery-grid">
+                {% for work in portfolio.all_artworks %}
+                <div class="gallery-item" data-category="{{ work.category_type }}">
+                    <div class="gallery-image">
+                        <img src="{{ url_for('static', filename='images/works/' + work.image) }}" alt="{{ work.title }}">
+                    </div>
+                    <div class="gallery-info">
+                        <h3>{{ work.title }}</h3>
+                        <p>{{ work.description }}</p>
+                        <div class="gallery-meta">
+                            <span><i class="far fa-calendar-alt"></i> {{ work.year }}</span>
+                            {% if work.category %}
+                                <span><i class="fas fa-palette"></i> {{ work.category }}</span>
+                            {% elif work.technique %}
+                                <span><i class="fas fa-fire"></i> {{ work.technique }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер с иконками контактов -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-social">
+                    <a href="{{ portfolio.contact.eye }}" class="social-icon" target="_blank"><i class="fas fa-eye"></i> 👁️‍🗨️</a>
+                    <a href="{{ portfolio.contact.camera }}" class="social-icon" target="_blank"><i class="fas fa-camera"></i> 📷</a>
+                    <a href="{{ portfolio.contact.video }}" class="social-icon" target="_blank"><i class="fas fa-video"></i> 🎥</a>
+                    <a href="mailto:{{ portfolio.contact.email }}" class="social-icon"><i class="fas fa-envelope"></i></a>
+                </div>
+                <p class="copyright">&copy; 2025 {{ portfolio.name }}. All works are unique and made in a single copy.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Фильтрация галереи
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filterValue = btn.getAttribute('data-filter');
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                galleryItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Мобильное меню
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
