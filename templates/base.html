@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Anastasia Zaitseva | Artist Portfolio{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>{% block title %}AZA.braim | Artist Portfolio{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="/" class="logo">Anastasia Zaitseva</a>
+            <a href="/" class="logo">AZA.braim</a>
             <div class="nav-links">
                 <a href="/#home">Home</a>
-                <a href="/#about">About</a>
-                <a href="/#techniques">Techniques</a>
-                <a href="/#art-store">Art store AID</a>
                 <a href="/contact">Contact</a>
+                <a href="/#art-store">Art store</a>
             </div>
             <div class="hamburger">
                 <span></span><span></span><span></span>
@@ -41,18 +40,10 @@
     </main>
 
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-social">
-                    <a href="#" class="social-icon"><i class="fas fa-eye"></i> 👁️‍🗨️</a>
-                    <a href="#" class="social-icon"><i class="fas fa-camera"></i> 📷</a>
-                    <a href="#" class="social-icon"><i class="fas fa-video"></i> 🎥</a>
-                    <a href="mailto:anastasia@artmail.com" class="social-icon"><i class="fas fa-envelope"></i></a>
-                </div>
-                <p class="copyright">&copy; 2025 Anastasia Zaitseva. All works are unique.</p>
-            </div>
-        </div>
-    </footer>
+    <div class="container">
+        <p class="copyright">© 2025 AZA.brain. Все права защищены.</p>
+    </div>
+</footer>
 
     <script>
         const hamburger = document.querySelector('.hamburger');

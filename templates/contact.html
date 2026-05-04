@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ portfolio.name }} | Art Portfolio</title>
-    <!-- Импрессионистские шрифты -->
+    <title>Anastasia Zaitseva | Contact</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -12,13 +11,11 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="/" class="logo">{{ portfolio.name }}</a>
+            <a href="/" class="logo">Anastasia Zaitseva</a>
             <div class="nav-links">
                 <a href="/#home">Home</a>
-                <a href="/#about">About</a>
-                <a href="/#techniques">Techniques</a>
-                <a href="/#art-store">Art store AID</a>
                 <a href="/contact">Contact</a>
+                <a href="/#art-store">Art store</a>
             </div>
             <div class="hamburger">
                 <span></span><span></span><span></span>
@@ -33,16 +30,12 @@
                 <div class="contact-info">
                     <h2>Anastasia Zaitseva</h2>
                     <div class="contact-details">
-                        <p><i class="fas fa-eye"></i> 👁️‍🗨️ <a href="{{ portfolio.contact.eye }}" target="_blank">Behance / Portfolio</a></p>
-                        <p><i class="fas fa-camera"></i> 📷 <a href="{{ portfolio.contact.camera }}" target="_blank">Instagram</a></p>
-                        <p><i class="fas fa-video"></i> 🎥 <a href="{{ portfolio.contact.video }}" target="_blank">YouTube channel</a></p>
-                        <p><i class="fas fa-envelope"></i> 📧 <a href="mailto:{{ portfolio.contact.email }}">{{ portfolio.contact.email }}</a></p>
+                        <p><i class="fas fa-envelope"></i> <a href="mailto:anastasia@artmail.com">anastasia@artmail.com</a></p>
                     </div>
                     <div class="contact-bio">
-                        <p>{{ portfolio.bio }}</p>
+                        <p>{{ about.bio if about.bio else 'Welcome to my cabinet of curiosities! I\'m an artist...' }}</p>
                     </div>
                 </div>
-
                 <div class="contact-form">
                     <form method="POST" action="/contact">
                         <div class="form-group">
@@ -72,18 +65,18 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-social">
-                    <a href="{{ portfolio.contact.eye }}" class="social-icon" target="_blank"><i class="fas fa-eye"></i> 👁️‍🗨️</a>
-                    <a href="{{ portfolio.contact.camera }}" class="social-icon" target="_blank"><i class="fas fa-camera"></i> 📷</a>
-                    <a href="{{ portfolio.contact.video }}" class="social-icon" target="_blank"><i class="fas fa-video"></i> 🎥</a>
-                    <a href="mailto:{{ portfolio.contact.email }}" class="social-icon"><i class="fas fa-envelope"></i></a>
+                    <a href="https://yandex.ru" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="https://yandex.ru" target="_blank" class="social-icon"><i class="fab fa-pinterest"></i></a>
+                    <a href="https://yandex.ru" target="_blank" class="social-icon"><i class="fab fa-vk"></i></a>
+                    <a href="https://yandex.ru" target="_blank" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="https://yandex.ru" target="_blank" class="social-icon"><i class="fab fa-youtube"></i></a>
                 </div>
-                <p class="copyright">&copy; 2025 {{ portfolio.name }}</p>
+                <p class="copyright">&copy; 2025 Anastasia Zaitseva</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Мобильное меню
         const hamburger = document.querySelector('.hamburger');
         const navLinks = document.querySelector('.nav-links');
         hamburger.addEventListener('click', () => {
