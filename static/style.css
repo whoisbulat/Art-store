@@ -98,7 +98,7 @@ body {
     margin: 4px 0;
 }
 
-/* ========== ГЛАВНАЯ СЕТКА – ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ ========== */
+/* ========== ГЛАВНАЯ СЕТКА ========== */
 .homepage-grid {
     display: grid;
     grid-template-columns: 120px 1fr 240px;
@@ -114,7 +114,8 @@ body {
     background: none;
     padding: 0;
     text-align: left;
-    margin-top: 1.8rem;  /* опускаем блок Contact под шапку, напротив имени */
+    margin-top: 1.8rem;
+    margin-left: 65px;
 }
 
 .contact-heading {
@@ -126,7 +127,7 @@ body {
     padding-left: 0;
 }
 
-/* Иконки в две колонки, компактно */
+/* Иконки в две колонки */
 .contact-icons-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -154,10 +155,12 @@ body {
     transform: translateY(-2px);
 }
 
-/* Центральная колонка – текст */
+/* Центральная колонка – текст со сдвигом влево */
 .center-text {
     text-align: center;
     padding: 0;
+    position: relative;
+    left: 50px;  /* Сдвиг влево для визуального центрирования */
 }
 
 .main-name {
@@ -356,7 +359,7 @@ body {
     border-radius: 20px;
 }
 
-/* ========== ФУТЕР (только копирайт) ========== */
+/* ========== ФУТЕР ========== */
 .footer {
     background: #faf2e8;
     padding: 1.2rem 0;
@@ -378,6 +381,10 @@ body {
     }
     .contact-sidebar {
         margin-top: 1.6rem;
+    }
+    /* На планшетах сдвиг уменьшаем */
+    .center-text {
+        left: -5px;
     }
 }
 @media (max-width: 768px) {
@@ -404,6 +411,7 @@ body {
     }
     .center-text {
         order: 1;
+        left: 0; /* на мобильных убираем сдвиг */
     }
     .artist-photo {
         order: 3;
