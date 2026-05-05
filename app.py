@@ -7,11 +7,10 @@ from datetime import datetime
 import hashlib
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-this'  # измените на случайный текст
+app.config['SECRET_KEY'] = 'your-secret-key-change-this'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Конфигурация загрузки файлов
 UPLOAD_FOLDER = os.path.join('static', 'images', 'works')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -20,24 +19,20 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 db = SQLAlchemy(app)
 
 
-# ---------- МОДЕЛИ БАЗЫ ДАННЫХ ----------
+# ---------- МОДЕЛИ ----------
 class Artwork(db.Model):
-    """Одна работа (картина, керамика, вышивка)"""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     image_filename = db.Column(db.String(200), nullable=False)
     year = db.Column(db.Integer, nullable=True)
-    category = db.Column(db.String(50), nullable=False)  # oil, mixed, embroidery
-    technique = db.Column(db.String(100), nullable=True)  # техника изготовления (для керамики)
+    category = db.Column(db.String(50), nullable=False)
+    technique = db.Column(db.String(100), nullable=True)
+    size = db.Column(db.String(50), nullable=True)          # поле Размер
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<Artwork {self.title}>'
 
 
 class About(db.Model):
-    """Информация обо мне (био, фото, контакты)"""
     id = db.Column(db.Integer, primary_key=True)
     bio = db.Column(db.Text, nullable=False, default='')
     photo_filename = db.Column(db.String(200), nullable=True)
@@ -47,7 +42,6 @@ class About(db.Model):
 
 
 class User(db.Model):
-    """Для простой авторизации (один пользователь)"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
@@ -65,22 +59,17 @@ def login_required(f):
             flash('Пожалуйста, авторизуйтесь', 'warning')
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
-
     return decorated_function
 
 
 def init_admin_user():
-    """Создаёт администратора, если его нет"""
     if not User.query.first():
-        # пароль 'admin123' хешируем простым способом (для простоты)
-        # в реальном проекте используйте Werkzeug generate_password_hash
         admin = User(username='admin', password_hash=hashlib.md5('admin123'.encode()).hexdigest())
         db.session.add(admin)
         db.session.commit()
 
 
 def init_about():
-    """Создаёт пустую запись About, если её нет"""
     if not About.query.first():
         about = About(
             bio='Welcome to my cabinet of curiosities! I\'m an artist...',
@@ -92,16 +81,26 @@ def init_about():
         db.session.commit()
 
 
+def migrate_categories():
+    mixed_works = Artwork.query.filter_by(category='mixed').all()
+    for work in mixed_works:
+        work.category = 'mixed_media'
+    if mixed_works:
+        db.session.commit()
+        print(f"Миграция: {len(mixed_works)} работ переведены из 'mixed' в 'mixed_media'")
+
+
 # ---------- ПУБЛИЧНЫЕ МАРШРУТЫ ----------
 @app.route('/')
 def index():
     about = About.query.first()
-    # Для статистики в разделе About (количества работ)
     paintings_count = Artwork.query.filter_by(category='oil').count()
-    ceramics_count = Artwork.query.filter_by(category='mixed').count()
+    mixed_media_count = Artwork.query.filter_by(category='mixed_media').count()
+    ceramics_count = Artwork.query.filter_by(category='ceramics').count()
     embroidery_count = Artwork.query.filter_by(category='embroidery').count()
     return render_template('index.html', about=about,
                            paintings_count=paintings_count,
+                           mixed_media_count=mixed_media_count,
                            ceramics_count=ceramics_count,
                            embroidery_count=embroidery_count)
 
@@ -112,10 +111,16 @@ def paintings():
     return render_template('gallery.html', artworks=artworks, title='Oil Paintings', category='oil')
 
 
+@app.route('/mixed-media')
+def mixed_media():
+    artworks = Artwork.query.filter_by(category='mixed_media').order_by(Artwork.year.desc()).all()
+    return render_template('gallery.html', artworks=artworks, title='Mixed Media', category='mixed_media')
+
+
 @app.route('/ceramics')
 def ceramics():
-    artworks = Artwork.query.filter_by(category='mixed').order_by(Artwork.year.desc()).all()
-    return render_template('gallery.html', artworks=artworks, title='Mixed Media & Ceramics', category='mixed')
+    artworks = Artwork.query.filter_by(category='ceramics').order_by(Artwork.year.desc()).all()
+    return render_template('gallery.html', artworks=artworks, title='Ceramics', category='ceramics')
 
 
 @app.route('/embroidery')
@@ -136,7 +141,6 @@ def contact():
         name = request.form.get('name')
         email = request.form.get('email')
         message = request.form.get('message')
-        # Здесь можно настроить реальную отправку почты
         flash(f'Спасибо, {name}! Ваше сообщение отправлено.', 'success')
         return redirect(url_for('contact'))
     about = About.query.first()
@@ -182,6 +186,7 @@ def add_artwork():
         year = request.form.get('year')
         category = request.form.get('category')
         technique = request.form.get('technique')
+        size = request.form.get('size')                     # <-- размер
 
         if 'image' not in request.files:
             flash('Файл изображения не выбран', 'danger')
@@ -194,7 +199,6 @@ def add_artwork():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            # Добавляем временную метку, чтобы избежать дублирования
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
             filename = timestamp + filename
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -205,7 +209,8 @@ def add_artwork():
                 image_filename=filename,
                 year=year if year else None,
                 category=category,
-                technique=technique if technique else None
+                technique=technique if technique else None,
+                size=size if size else None                  # <-- сохраняем размер
             )
             db.session.add(artwork)
             db.session.commit()
@@ -225,11 +230,11 @@ def edit_artwork(id):
         artwork.year = request.form.get('year') or None
         artwork.category = request.form.get('category')
         artwork.technique = request.form.get('technique') or None
+        artwork.size = request.form.get('size') or None        # <-- размер
 
         if 'image' in request.files:
             file = request.files['image']
             if file and file.filename != '' and allowed_file(file.filename):
-                # Удаляем старый файл
                 old_path = os.path.join(app.config['UPLOAD_FOLDER'], artwork.image_filename)
                 if os.path.exists(old_path):
                     os.remove(old_path)
@@ -250,7 +255,6 @@ def edit_artwork(id):
 @login_required
 def delete_artwork(id):
     artwork = Artwork.query.get_or_404(id)
-    # Удаляем файл изображения
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], artwork.image_filename)
     if os.path.exists(image_path):
         os.remove(image_path)
@@ -290,17 +294,28 @@ def edit_about():
 
     return render_template('admin/about_edit.html', about=about)
 
+
 @app.route('/api/artworks')
 def api_artworks():
     artworks = Artwork.query.order_by(Artwork.created_at.desc()).all()
-    return [{'id': a.id, 'title': a.title, 'description': a.description, 'image_filename': a.image_filename, 'year': a.year, 'category': a.category, 'technique': a.technique} for a in artworks]
+    return [{
+        'id': a.id,
+        'title': a.title,
+        'description': a.description,
+        'image_filename': a.image_filename,
+        'year': a.year,
+        'category': a.category,
+        'technique': a.technique,
+        'size': a.size            # <-- размер в JSON
+    } for a in artworks]
 
 
-# Запуск и инициализация БД
+# ---------- ЗАПУСК И ИНИЦИАЛИЗАЦИЯ ----------
 with app.app_context():
     db.create_all()
     init_admin_user()
     init_about()
+    migrate_categories()
 
 if __name__ == '__main__':
     app.run(debug=True)

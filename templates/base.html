@@ -6,8 +6,7 @@
     <title>{% block title %}AZA.brain | Artist Portfolio{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=1">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -40,10 +39,10 @@
     </main>
 
     <footer class="footer">
-    <div class="container">
-        <p class="copyright">© 2025 AZA.brain. Все права защищены.</p>
-    </div>
-</footer>
+        <div class="container">
+            <p class="copyright">© 2025 AZA.brain. Все права защищены.</p>
+        </div>
+    </footer>
 
     <script>
         const hamburger = document.querySelector('.hamburger');

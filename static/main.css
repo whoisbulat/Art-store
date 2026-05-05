@@ -1,14 +1,14 @@
-/* IMPRESSIONIST STYLE – обновлённый, со светлым фоном и современными шрифтами */
+/* IMPRESSIONIST STYLE – БЕЛЫЙ ФОН */
 :root {
-    --bg-light: #fff7f0;
-    --bg-paper: #fffaf5;
+    --bg-light: #ffffff;
+    --bg-paper: #ffffff;
     --color-accent: #c4a882;
     --color-soft-blue: #d4e0e0;
     --color-lavender: #e8dfe5;
     --color-text: #3a3a3a;
     --color-dim: #8a7a6a;
-    --border-light: #efe0d0;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    --border-light: #eaeaea;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     --font-heading: 'Playfair Display', 'Georgia', serif;
     --font-body: 'Inter', 'Helvetica Neue', sans-serif;
 }
@@ -21,11 +21,9 @@
 
 body {
     font-family: var(--font-body);
-    background: var(--bg-light);
+    background: #ffffff;
     color: var(--color-text);
     line-height: 1.6;
-    background-image: radial-gradient(circle at 20% 30%, rgba(200,180,150,0.08) 2%, transparent 2.5%);
-    background-size: 40px 40px;
     padding-top: 90px;
 }
 
@@ -35,10 +33,10 @@ body {
     padding: 0 2rem;
 }
 
-/* ========== НАВИГАЦИЯ ========== */
+/* ========== НАВИГАЦИЯ (белый фон) ========== */
 .navbar {
-    background: rgba(255, 247, 240, 0.92);
-    backdrop-filter: blur(8px);
+    background: #ffffff;
+    backdrop-filter: none;
     padding: 0.8rem 0;
     position: fixed;
     width: 100%;
@@ -109,7 +107,7 @@ body {
     padding: 0 2rem;
 }
 
-/* Левая колонка – смещаем вниз на уровень имени */
+/* Левая колонка – без фона */
 .contact-sidebar {
     background: none;
     padding: 0;
@@ -127,7 +125,7 @@ body {
     padding-left: 0;
 }
 
-/* Иконки в две колонки */
+/* Иконки – без фона, но с кружком при ховере */
 .contact-icons-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -143,7 +141,7 @@ body {
     color: var(--color-dim);
     font-size: 1.2rem;
     transition: 0.2s;
-    background: rgba(230, 215, 195, 0.2);
+    background: transparent;
     border-radius: 50%;
     width: 38px;
     height: 38px;
@@ -151,16 +149,16 @@ body {
 
 .contact-icon-link:hover {
     color: var(--color-accent);
-    background: rgba(230, 215, 195, 0.5);
+    background: rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
 }
 
-/* Центральная колонка – текст со сдвигом влево */
+/* Центральная колонка – текст */
 .center-text {
     text-align: center;
     padding: 0;
     position: relative;
-    left: 50px;  /* Сдвиг влево для визуального центрирования */
+    left: 50px;
 }
 
 .main-name {
@@ -212,7 +210,7 @@ body {
     color: white;
 }
 
-/* Правая колонка – фото */
+/* Правая колонка – фото, белый фон */
 .artist-photo {
     display: flex;
     justify-content: center;
@@ -222,9 +220,9 @@ body {
     max-width: 220px;
     border-radius: 50%;
     overflow: hidden;
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.05);
-    border: 3px solid white;
-    background: #f2e6da;
+    box-shadow: none;
+    border: 1px solid var(--border-light);
+    background: #ffffff;
 }
 .photo-frame img {
     width: 100%;
@@ -281,20 +279,21 @@ body {
     gap: 2rem;
 }
 .gallery-item {
-    background: #fffcf8;
+    background: #ffffff;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: var(--shadow);
     transition: 0.25s;
+    border: 1px solid var(--border-light);
 }
 .gallery-item:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 .gallery-image {
     height: 260px;
     overflow: hidden;
-    background: #f2e6da;
+    background: #f5f5f5;
 }
 .gallery-image img {
     width: 100%;
@@ -340,10 +339,14 @@ body {
 .contact-form input, .contact-form textarea {
     width: 100%;
     padding: 0.8rem;
-    background: #fffcf8;
+    background: #ffffff;
     border: 1px solid var(--border-light);
     border-radius: 20px;
     font-family: var(--font-body);
+}
+.contact-form input:focus, .contact-form textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
 }
 .submit-btn {
     background: var(--color-accent);
@@ -359,9 +362,9 @@ body {
     border-radius: 20px;
 }
 
-/* ========== ФУТЕР ========== */
+/* ========== ФУТЕР (белый фон) ========== */
 .footer {
-    background: #faf2e8;
+    background: #ffffff;
     padding: 1.2rem 0;
     text-align: center;
     border-top: 1px solid var(--border-light);
@@ -382,7 +385,6 @@ body {
     .contact-sidebar {
         margin-top: 1.6rem;
     }
-    /* На планшетах сдвиг уменьшаем */
     .center-text {
         left: -5px;
     }
@@ -400,6 +402,7 @@ body {
         order: 2;
         text-align: center;
         margin-top: 0;
+        margin-left: 0;
     }
     .contact-heading {
         text-align: center;
@@ -411,7 +414,7 @@ body {
     }
     .center-text {
         order: 1;
-        left: 0; /* на мобильных убираем сдвиг */
+        left: 0;
     }
     .artist-photo {
         order: 3;
@@ -428,13 +431,14 @@ body {
         top: 60px;
         left: -100%;
         width: 100%;
-        background: rgba(255, 247, 240, 0.97);
-        backdrop-filter: blur(10px);
+        background: #ffffff;
+        backdrop-filter: none;
         flex-direction: column;
         align-items: center;
         gap: 1.2rem;
         transition: 0.3s;
         padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-light);
     }
     .nav-links.active {
         left: 0;
@@ -442,4 +446,59 @@ body {
     .hamburger {
         display: flex;
     }
+}
+
+/* ========== ОРИГИНАЛЬНЫЕ ЦВЕТА ИКОНОК СОЦСЕТЕЙ ========== */
+/* Для левой колонки Contact */
+.contact-icon-link {
+    color: inherit; /* убираем общий цвет, чтобы сработали специфичные */
+}
+
+/* Email */
+.contact-icon-link .fa-envelope {
+    color: #D44638;
+}
+/* Instagram */
+.contact-icon-link .fa-instagram {
+    color: #E4405F;
+}
+/* Pinterest */
+.contact-icon-link .fa-pinterest {
+    color: #BD081C;
+}
+/* VK */
+.contact-icon-link .fa-vk {
+    color: #4680C2;
+}
+/* Telegram */
+.contact-icon-link .fa-telegram {
+    color: #26A5E4;
+}
+/* YouTube */
+.contact-icon-link .fa-youtube {
+    color: #FF0000;
+}
+
+/* При наведении не меняем цвет иконки, только фон */
+.contact-icon-link:hover {
+    background: rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+.contact-icon-link:hover i {
+    color: inherit; /* сохраняем оригинальный цвет, не перебиваем */
+}
+
+/* ========== ДЛЯ ИКОНОК В ФУТЕРЕ (если они ещё есть) ========== */
+.footer-social .social-icon {
+    color: inherit;
+}
+.footer-social .social-icon .fa-instagram { color: #E4405F; }
+.footer-social .social-icon .fa-pinterest { color: #BD081C; }
+.footer-social .social-icon .fa-vk { color: #4680C2; }
+.footer-social .social-icon .fa-telegram { color: #26A5E4; }
+.footer-social .social-icon .fa-youtube { color: #FF0000; }
+
+.footer-social .social-icon:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
 }
