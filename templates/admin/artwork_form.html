@@ -13,6 +13,12 @@
         button { margin-top: 1.5rem; background: #c4a882; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 30px; cursor: pointer; }
         button:hover { background: #b09774; }
         .back { display: inline-block; margin-top: 1rem; color: #666; text-decoration: none; }
+        .current-images { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .image-item { position: relative; width: 100px; }
+        .image-item img { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid transparent; }
+        .image-item.primary img { border-color: #c4a882; }
+        .image-item .badge { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; }
+        .delete-img-btn { display: inline-block; margin-top: 5px; color: red; font-size: 12px; cursor: pointer; background: none; border: none; padding: 0; }
     </style>
 </head>
 <body>
@@ -42,8 +48,31 @@
             <label>Размер (опционально)</label>
             <input type="text" name="size" value="{{ artwork.size if artwork else '' }}" placeholder="50x70 см, 30x40x20 см...">
 
-            <label>Изображение {% if artwork %}(оставьте пустым, чтобы не менять){% else %}*{% endif %}</label>
-            <input type="file" name="image" accept="image/*" {% if not artwork %}required{% endif %}>
+            <label>Основное изображение {% if not artwork %}*{% endif %}</label>
+            <input type="file" name="primary_image" accept="image/*" {% if not artwork %}required{% endif %}>
+
+            <label>Дополнительные изображения</label>
+            <input type="file" name="additional_images" accept="image/*" multiple>
+
+            {% if artwork and artwork.images %}
+            <div style="margin-top: 1rem;">
+                <strong>Текущие изображения:</strong>
+                <div class="current-images">
+                    {% for img in artwork.images %}
+                    <div class="image-item {% if img.is_primary %}primary{% endif %}">
+                        <img src="{{ url_for('static', filename='images/works/' + img.filename) }}" alt="img">
+                        {% if img.is_primary %}
+                        <span class="badge">Основное</span>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('delete_work_image', artwork_id=artwork.id, image_id=img.id) }}" style="display:inline;">
+                            <button type="submit" class="delete-img-btn" onclick="return confirm('Удалить это изображение?')">Удалить</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
             <button type="submit">{% if artwork %}Сохранить{% else %}Добавить{% endif %}</button>
         </form>

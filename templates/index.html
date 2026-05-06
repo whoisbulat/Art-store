@@ -15,7 +15,7 @@
         </div>
     </div>
 
-    <!-- Центральная колонка: текст по центру -->
+    <!-- Центральная колонка: текст -->
     <div class="center-text">
         <h1 class="main-name">Anastasia Zaitseva</h1>
         <p class="greeting">Welcome to my cabinet of curiosities ✨</p>
@@ -36,7 +36,7 @@
     </div>
 </div>
 
-<!-- Секция галереи -->
+<!-- Галерея -->
 <section id="art-store" class="gallery-section">
     <div class="container">
         <h2 class="section-title">Art store</h2>
@@ -51,10 +51,34 @@
     </div>
 </section>
 
+<!-- Модальное окно (только затемнение + карусель) -->
+<!-- Модальное окно (только затемнение + карусель) -->
+<div class="modal-overlay" id="artwork-modal">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Закрыть">&times;</button>
+    <div class="modal-lightbox" id="modal-lightbox">
+        <!-- JS заполнит карусель -->
+    </div>
+</div>
+
 <script>
+    let artworksCache = [];
+
+    // Загрузка всех работ для галереи
     async function loadArtworks() {
-        const res = await fetch('/api/artworks');
-        const artworks = await res.json();
+        try {
+            const res = await fetch('/api/artworks');
+            artworksCache = await res.json();
+            renderGallery(artworksCache);
+            if (!window._filtersInitialized) {
+                applyFilters();
+                window._filtersInitialized = true;
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки работ:', err);
+        }
+    }
+
+    function renderGallery(artworks) {
         const grid = document.getElementById('gallery-grid');
         if (!grid) return;
         grid.innerHTML = '';
@@ -62,8 +86,12 @@
             const card = document.createElement('div');
             card.className = 'gallery-item';
             card.setAttribute('data-category', art.category);
+            card.setAttribute('data-id', art.id);
+            card.style.cursor = 'pointer';
             card.innerHTML = `
-                <div class="gallery-image"><img src="/static/images/works/${art.image_filename}" alt="${art.title}"></div>
+                <div class="gallery-image">
+                    <img src="/static/images/works/${art.image_filename}" alt="${art.title}" onerror="this.src='/static/images/placeholder.jpg'">
+                </div>
                 <div class="gallery-info">
                     <h3>${art.title}</h3>
                     <p>${art.description || ''}</p>
@@ -74,19 +102,20 @@
                     </div>
                 </div>
             `;
+            card.addEventListener('click', () => openArtworkModal(art.id));
             grid.appendChild(card);
         });
-        applyFilters();
     }
 
+    // Фильтрация галереи
     function applyFilters() {
         const btns = document.querySelectorAll('.filter-btn');
-        const items = document.querySelectorAll('.gallery-item');
         btns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const filter = btn.getAttribute('data-filter');
                 btns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                const items = document.querySelectorAll('.gallery-item');
                 items.forEach(item => {
                     if (filter === 'all' || item.getAttribute('data-category') === filter) {
                         item.style.display = 'block';
@@ -98,6 +127,111 @@
         });
     }
 
+    // ---------- МОДАЛЬНОЕ ОКНО (LIGHTBOX) ----------
+    const modalOverlay = document.getElementById('artwork-modal');
+    const lightbox = document.getElementById('modal-lightbox');
+    const lightboxClose = document.getElementById('lightbox-close');
+
+lightboxClose.addEventListener('click', closeModal);
+
+    // Закрытие по клику на фон
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeModal();
+    });
+
+    // Закрытие по клавише Esc
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    async function openArtworkModal(artworkId) {
+        try {
+            const res = await fetch(`/api/artwork/${artworkId}`);
+            const art = await res.json();
+            buildLightboxContent(art);
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        } catch (err) {
+            console.error('Ошибка загрузки деталей:', err);
+        }
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function buildLightboxContent(art) {
+        const images = art.images && art.images.length > 0 ? art.images : [];
+        if (images.length === 0) return;
+
+        lightbox.innerHTML = `
+            <div class="lightbox-carousel" id="lightbox-carousel">
+                ${images.map(img => `<img src="/static/images/works/${img}" class="lightbox-slide" alt="${art.title}">`).join('')}
+                <div class="lightbox-controls">
+                    <button class="lightbox-btn" id="lightbox-prev">‹</button>
+                    <button class="lightbox-btn" id="lightbox-next">›</button>
+                </div>
+                <div class="lightbox-dots" id="lightbox-dots"></div>
+            </div>
+        `;
+
+        if (images.length > 1) {
+            initLightboxCarousel(images.length);
+        } else {
+            // Если только одно изображение, скрываем стрелки и точки
+            document.querySelector('.lightbox-controls').style.display = 'none';
+            document.getElementById('lightbox-dots').style.display = 'none';
+        }
+    }
+
+    function initLightboxCarousel(slideCount) {
+        const slides = document.querySelectorAll('.lightbox-slide');
+        const prevBtn = document.getElementById('lightbox-prev');
+        const nextBtn = document.getElementById('lightbox-next');
+        const dotsContainer = document.getElementById('lightbox-dots');
+        let currentSlide = 0;
+
+        // Создаём точки
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < slideCount; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'dot';
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => {
+                currentSlide = i;
+                updateSlide();
+            });
+            dotsContainer.appendChild(dot);
+        }
+
+        function updateSlide() {
+            slides.forEach((s, i) => {
+                s.style.display = i === currentSlide ? 'block' : 'none';
+            });
+            document.querySelectorAll('.lightbox-dots .dot').forEach((d, i) => {
+                d.classList.toggle('active', i === currentSlide);
+            });
+        }
+
+        updateSlide();
+
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // чтобы не закрыть модалку по клику на фон
+            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
+            updateSlide();
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentSlide = (currentSlide + 1) % slideCount;
+            updateSlide();
+        });
+    }
+
+    // Запуск
     loadArtworks();
 </script>
 {% endblock %}

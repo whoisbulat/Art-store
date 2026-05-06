@@ -24,12 +24,32 @@ class Artwork(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    # основное изображение денормализовано для быстрых запросов, синхронизируется с WorkImage
     image_filename = db.Column(db.String(200), nullable=False)
     year = db.Column(db.Integer, nullable=True)
     category = db.Column(db.String(50), nullable=False)
     technique = db.Column(db.String(100), nullable=True)
-    size = db.Column(db.String(50), nullable=True)          # поле Размер
+    size = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    images = db.relationship('WorkImage', backref='artwork', lazy=True,
+                             cascade='all, delete-orphan')
+
+    def get_primary_image(self):
+        for img in self.images:
+            if img.is_primary:
+                return img
+        return None
+
+    def get_secondary_images(self):
+        return [img for img in self.images if not img.is_primary]
+
+
+class WorkImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    artwork_id = db.Column(db.Integer, db.ForeignKey('artwork.id'), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)
+    is_primary = db.Column(db.Boolean, default=False)
 
 
 class About(db.Model):
@@ -90,6 +110,22 @@ def migrate_categories():
         print(f"Миграция: {len(mixed_works)} работ переведены из 'mixed' в 'mixed_media'")
 
 
+def migrate_work_images():
+    """Перенос существующих работ в новую таблицу WorkImage, если она пуста."""
+    if WorkImage.query.first() is None:
+        artworks = Artwork.query.all()
+        for art in artworks:
+            if art.image_filename:
+                img = WorkImage(
+                    artwork_id=art.id,
+                    filename=art.image_filename,
+                    is_primary=True
+                )
+                db.session.add(img)
+        db.session.commit()
+        print("Миграция изображений завершена.")
+
+
 # ---------- ПУБЛИЧНЫЕ МАРШРУТЫ ----------
 @app.route('/')
 def index():
@@ -147,6 +183,15 @@ def contact():
     return render_template('contact.html', about=about)
 
 
+@app.route('/artwork/<int:id>')
+def artwork_detail(id):
+    artwork = Artwork.query.get_or_404(id)
+    primary_img = artwork.get_primary_image()
+    secondary_images = artwork.get_secondary_images()
+    return render_template('artwork_detail.html', artwork=artwork,
+                           primary=primary_img, secondary=secondary_images)
+
+
 # ---------- АДМИН-ПАНЕЛЬ ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -186,36 +231,55 @@ def add_artwork():
         year = request.form.get('year')
         category = request.form.get('category')
         technique = request.form.get('technique')
-        size = request.form.get('size')                     # <-- размер
+        size = request.form.get('size')
 
-        if 'image' not in request.files:
-            flash('Файл изображения не выбран', 'danger')
+        # Основное изображение
+        primary_file = request.files.get('primary_image')
+        if not primary_file or primary_file.filename == '':
+            flash('Основное изображение обязательно', 'danger')
+            return redirect(request.url)
+        if not allowed_file(primary_file.filename):
+            flash('Недопустимый формат основного изображения', 'danger')
             return redirect(request.url)
 
-        file = request.files['image']
-        if file.filename == '':
-            flash('Файл изображения не выбран', 'danger')
-            return redirect(request.url)
+        # Сохраняем основное изображение
+        filename = secure_filename(primary_file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+        filename = timestamp + filename
+        primary_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        primary_image_filename = filename
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
-            filename = timestamp + filename
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        # Создаем работу
+        artwork = Artwork(
+            title=title,
+            description=description,
+            image_filename=primary_image_filename,  # пока основное
+            year=year if year else None,
+            category=category,
+            technique=technique if technique else None,
+            size=size if size else None
+        )
+        db.session.add(artwork)
+        db.session.flush()  # получаем artwork.id
 
-            artwork = Artwork(
-                title=title,
-                description=description,
-                image_filename=filename,
-                year=year if year else None,
-                category=category,
-                technique=technique if technique else None,
-                size=size if size else None                  # <-- сохраняем размер
-            )
-            db.session.add(artwork)
-            db.session.commit()
-            flash('Работа успешно добавлена', 'success')
-            return redirect(url_for('admin_dashboard'))
+        # Создаем запись основного изображения
+        primary_img = WorkImage(artwork_id=artwork.id, filename=primary_image_filename, is_primary=True)
+        db.session.add(primary_img)
+
+        # Дополнительные изображения
+        additional_files = request.files.getlist('additional_images')
+        for file in additional_files:
+            if file and file.filename != '' and allowed_file(file.filename):
+                fname = secure_filename(file.filename)
+                ts = datetime.now().strftime('%Y%m%d_%H%M%S_%f_')
+                fname = ts + fname
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+                img = WorkImage(artwork_id=artwork.id, filename=fname, is_primary=False)
+                db.session.add(img)
+
+        db.session.commit()
+        flash('Работа успешно добавлена', 'success')
+        return redirect(url_for('admin_dashboard'))
 
     return render_template('admin/artwork_form.html')
 
@@ -230,19 +294,38 @@ def edit_artwork(id):
         artwork.year = request.form.get('year') or None
         artwork.category = request.form.get('category')
         artwork.technique = request.form.get('technique') or None
-        artwork.size = request.form.get('size') or None        # <-- размер
+        artwork.size = request.form.get('size') or None
 
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename != '' and allowed_file(file.filename):
-                old_path = os.path.join(app.config['UPLOAD_FOLDER'], artwork.image_filename)
+        # Обработка нового основного изображения (если загружено)
+        primary_file = request.files.get('primary_image')
+        if primary_file and primary_file.filename != '' and allowed_file(primary_file.filename):
+            # удалить старые основные изображения (физически и из базы)
+            old_primary = artwork.get_primary_image()
+            if old_primary:
+                old_path = os.path.join(app.config['UPLOAD_FOLDER'], old_primary.filename)
                 if os.path.exists(old_path):
                     os.remove(old_path)
-                filename = secure_filename(file.filename)
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
-                filename = timestamp + filename
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                artwork.image_filename = filename
+                db.session.delete(old_primary)
+            # сохранить новое основное
+            filename = secure_filename(primary_file.filename)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+            filename = timestamp + filename
+            primary_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # добавить запись и обновить artwork.image_filename
+            new_primary = WorkImage(artwork_id=artwork.id, filename=filename, is_primary=True)
+            db.session.add(new_primary)
+            artwork.image_filename = filename
+
+        # Дополнительные изображения
+        additional_files = request.files.getlist('additional_images')
+        for file in additional_files:
+            if file and file.filename != '' and allowed_file(file.filename):
+                fname = secure_filename(file.filename)
+                ts = datetime.now().strftime('%Y%m%d_%H%M%S_%f_')
+                fname = ts + fname
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+                img = WorkImage(artwork_id=artwork.id, filename=fname, is_primary=False)
+                db.session.add(img)
 
         db.session.commit()
         flash('Работа обновлена', 'success')
@@ -255,13 +338,33 @@ def edit_artwork(id):
 @login_required
 def delete_artwork(id):
     artwork = Artwork.query.get_or_404(id)
-    image_path = os.path.join(app.config['UPLOAD_FOLDER'], artwork.image_filename)
-    if os.path.exists(image_path):
-        os.remove(image_path)
+    # удаляем все изображения с диска
+    for img in artwork.images:
+        img_path = os.path.join(app.config['UPLOAD_FOLDER'], img.filename)
+        if os.path.exists(img_path):
+            os.remove(img_path)
     db.session.delete(artwork)
     db.session.commit()
     flash('Работа удалена', 'success')
     return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/artwork/<int:artwork_id>/delete_image/<int:image_id>', methods=['POST'])
+@login_required
+def delete_work_image(artwork_id, image_id):
+    artwork = Artwork.query.get_or_404(artwork_id)
+    img = WorkImage.query.get_or_404(image_id)
+    if img.artwork_id != artwork.id:
+        flash('Изображение не принадлежит этой работе', 'danger')
+        return redirect(url_for('edit_artwork', id=artwork_id))
+    # Удаляем файл
+    img_path = os.path.join(app.config['UPLOAD_FOLDER'], img.filename)
+    if os.path.exists(img_path):
+        os.remove(img_path)
+    db.session.delete(img)
+    db.session.commit()
+    flash('Изображение удалено', 'success')
+    return redirect(url_for('edit_artwork', id=artwork_id))
 
 
 @app.route('/admin/about/edit', methods=['GET', 'POST'])
@@ -298,16 +401,41 @@ def edit_about():
 @app.route('/api/artworks')
 def api_artworks():
     artworks = Artwork.query.order_by(Artwork.created_at.desc()).all()
-    return [{
-        'id': a.id,
-        'title': a.title,
-        'description': a.description,
-        'image_filename': a.image_filename,
-        'year': a.year,
-        'category': a.category,
-        'technique': a.technique,
-        'size': a.size            # <-- размер в JSON
-    } for a in artworks]
+    result = []
+    for a in artworks:
+        primary = a.get_primary_image()
+        result.append({
+            'id': a.id,
+            'title': a.title,
+            'description': a.description,
+            'image_filename': primary.filename if primary else a.image_filename,
+            'year': a.year,
+            'category': a.category,
+            'technique': a.technique,
+            'size': a.size
+        })
+    return result
+
+@app.route('/api/artwork/<int:id>')
+def api_artwork_detail(id):
+    artwork = Artwork.query.get_or_404(id)
+    primary = artwork.get_primary_image()
+    secondary = artwork.get_secondary_images()
+    images = []
+    if primary:
+        images.append(primary.filename)
+    for img in secondary:
+        images.append(img.filename)
+    return {
+        'id': artwork.id,
+        'title': artwork.title,
+        'description': artwork.description,
+        'year': artwork.year,
+        'size': artwork.size,
+        'technique': artwork.technique,
+        'category': artwork.category,
+        'images': images
+    }
 
 
 # ---------- ЗАПУСК И ИНИЦИАЛИЗАЦИЯ ----------
@@ -316,6 +444,7 @@ with app.app_context():
     init_admin_user()
     init_about()
     migrate_categories()
+    migrate_work_images()
 
 if __name__ == '__main__':
     app.run(debug=True)
