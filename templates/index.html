@@ -36,7 +36,7 @@
     </div>
 </div>
 
-<!-- Секция галереи (остаётся без изменений) -->
+<!-- Секция галереи -->
 <section id="art-store" class="gallery-section">
     <div class="container">
         <h2 class="section-title">Art store</h2>
@@ -46,7 +46,7 @@
             <button class="filter-btn" data-filter="mixed_media">Mixed media</button>
             <button class="filter-btn" data-filter="ceramics">Ceramics</button>
             <button class="filter-btn" data-filter="embroidery">Embroidery</button>
-</div>
+        </div>
         <div class="gallery-grid" id="gallery-grid"></div>
     </div>
 </section>
@@ -69,6 +69,7 @@
                     <p>${art.description || ''}</p>
                     <div class="gallery-meta">
                         <span>${art.year || ''}</span>
+                        <span>${art.size || ''}</span>
                         <span>${art.technique || art.category}</span>
                     </div>
                 </div>
