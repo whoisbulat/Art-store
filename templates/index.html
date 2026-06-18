@@ -7,29 +7,28 @@
 <meta property="og:title" content="Anastasia Zaitseva — Contemporary Artist">
 <meta property="og:description" content="Unique original artworks for collectors and galleries.">
 <meta property="og:image" content="{{ url_for('static', filename='images/artist_placeholder.jpg', _external=True) }}">
-<meta property="og:type" content="website">
 {% endblock %}
 
 {% block content %}
 
-<!-- ========== HERO ========== -->
+<!-- HERO -->
 <section class="hero">
     <div class="hero-content">
         <p class="hero-eyebrow">Contemporary Artist · Original Works</p>
-        <h1 class="hero-title">Anastasia Zaitseva</h1>
+        <h1 class="hero-title">Anastasia<br>Zaitseva</h1>
         <p class="hero-subtitle">
             Original paintings, ceramics & mixed-media pieces — each one created
             in a single copy. Inspired by experimentation with new techniques and materials.
         </p>
         <div class="hero-actions">
-            <a href="#art-store" class="btn btn-primary">View artworks</a>
+            <a href="/gallery" class="btn btn-primary">View gallery</a>
             <a href="/contact?subject=commission" class="btn btn-outline">Commission a piece</a>
         </div>
     </div>
     <div class="hero-image">
         <div class="hero-frame">
             <img src="{{ url_for('static', filename='images/artist_placeholder.jpg') }}"
-                 alt="Anastasia Zaitseva, contemporary artist, in her studio">
+                 alt="Anastasia Zaitseva, contemporary artist">
         </div>
         <div class="hero-social">
             <a href="mailto:anastasia@artmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
@@ -40,51 +39,45 @@
     </div>
 </section>
 
-<!-- ========== ГАЛЕРЕЯ ========== -->
-<section id="art-store" class="gallery-section">
+<!-- CATALOG CTA -->
+<section class="catalog-cta">
     <div class="container">
-        <h2 class="section-title">Art store</h2>
-        <p class="section-subtitle">Browse available original works. Each piece is unique.</p>
-        <div class="gallery-filters">
-            <button class="filter-btn active" data-filter="all">All works</button>
-            <button class="filter-btn" data-filter="oil">Oil painting</button>
-            <button class="filter-btn" data-filter="mixed_media">Mixed media</button>
-            <button class="filter-btn" data-filter="ceramics">Ceramics</button>
-            <button class="filter-btn" data-filter="embroidery">Embroidery</button>
-        </div>
-        <div class="gallery-grid" id="gallery-grid"></div>
+        <h2>Explore the collection</h2>
+        <p>Browse available original works — paintings, ceramics, mixed media and embroidery.</p>
+        <a href="/gallery" class="btn btn-primary btn-lg">Open the gallery</a>
     </div>
 </section>
 
-<!-- ========== КАК КУПИТЬ ========== -->
+<!-- HOW TO BUY -->
 <section class="how-to-buy">
     <div class="container">
         <h2 class="section-title">How buying works</h2>
+        <p class="section-subtitle"></p>
         <div class="steps-grid">
             <div class="step-card">
                 <i class="fas fa-heart"></i>
-                <h3>1. Choose a piece</h3>
+                <h3>Choose a piece</h3>
                 <p>Pick an available original or request a custom commission.</p>
             </div>
             <div class="step-card">
                 <i class="fas fa-comments"></i>
-                <h3>2. Get in touch</h3>
-                <p>I'll confirm availability, price and shipping details personally.</p>
+                <h3>Get in touch</h3>
+                <p>Message me directly via Telegram, WhatsApp or email.</p>
             </div>
             <div class="step-card">
                 <i class="fas fa-shipping-fast"></i>
-                <h3>3. Safe delivery</h3>
+                <h3>Safe delivery</h3>
                 <p>Carefully packed and shipped worldwide with a certificate of authenticity.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ========== ДЛЯ ГАЛЕРЕЙ И КОЛЛЕКЦИОНЕРОВ ========== -->
+<!-- FOR GALLERIES -->
 <section class="for-galleries">
     <div class="container for-galleries-inner">
         <div>
-            <h2 class="section-title" style="text-align:left;">For galleries & collectors</h2>
+            <h2 class="section-title">For galleries & collectors</h2>
             <p>I collaborate with galleries, interior designers and private collectors.
                Available for exhibitions, art fairs and commissioned collections.</p>
             <ul class="gallery-list">
@@ -100,10 +93,11 @@
     </div>
 </section>
 
-<!-- ========== ОТЗЫВЫ ========== -->
+<!-- TESTIMONIALS -->
 <section class="testimonials">
     <div class="container">
         <h2 class="section-title">What collectors say</h2>
+        <p class="section-subtitle">Trusted by private collectors and design studios.</p>
         <div class="testimonials-grid">
             <blockquote class="testimonial">
                 <p>"The painting transformed our living room. The texture in person is breathtaking."</p>
@@ -117,7 +111,7 @@
     </div>
 </section>
 
-<!-- ========== ФИНАЛЬНЫЙ CTA ========== -->
+<!-- FINAL CTA -->
 <section class="final-cta">
     <div class="container">
         <h2>Found something you love?</h2>
@@ -126,259 +120,4 @@
     </div>
 </section>
 
-<!-- Модальное окно для фото (карусель) -->
-<div class="modal-overlay" id="artwork-modal">
-    <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
-    <div class="modal-lightbox" id="modal-lightbox"></div>
-</div>
-
-<script>
-    let artworksCache = [];
-
-    async function loadArtworks() {
-        try {
-            const res = await fetch('/api/artworks');
-            artworksCache = await res.json();
-            renderGallery(artworksCache);
-            initFilters();
-        } catch (err) {
-            console.error('Ошибка загрузки работ:', err);
-        }
-    }
-
-    function renderGallery(artworks) {
-        const grid = document.getElementById('gallery-grid');
-        if (!grid) return;
-        grid.innerHTML = '';
-        artworks.forEach(art => {
-            const images = art.images || [];
-            const hasMultiple = images.length > 1;
-
-            const carouselHTML = `
-                <div class="carousel-container" data-id="${art.id}">
-                    <div class="carousel-images">
-                        ${images.map((img, idx) => `
-                            <img src="/static/images/works/${img}" class="carousel-img ${idx === 0 ? 'active' : ''}" data-index="${idx}" alt="${escapeHtml(art.title)} — ${escapeHtml(art.technique || art.category)}">
-                        `).join('')}
-                    </div>
-                    ${hasMultiple ? `
-                        <button class="carousel-prev" data-id="${art.id}">‹</button>
-                        <button class="carousel-next" data-id="${art.id}">›</button>
-                        <div class="carousel-dots">
-                            ${images.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-
-            const card = document.createElement('div');
-            card.className = 'gallery-item';
-            card.setAttribute('data-category', art.category);
-            card.setAttribute('data-id', art.id);
-
-            const photoArea = document.createElement('div');
-            photoArea.className = 'gallery-photo-area';
-            photoArea.style.cursor = 'zoom-in';
-            photoArea.innerHTML = carouselHTML;
-            photoArea.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openArtworkModal(art.id);
-            });
-
-            const infoArea = document.createElement('div');
-            infoArea.className = 'gallery-info';
-            infoArea.style.cursor = 'pointer';
-            infoArea.innerHTML = `
-                <h3>${escapeHtml(art.title)}</h3>
-                <p>${escapeHtml(art.description || '')}</p>
-                <div class="gallery-meta">
-                    <span>${art.year || ''}</span>
-                    <span>${art.size || ''}</span>
-                    <span>${escapeHtml(art.technique || art.category)}</span>
-                </div>
-                <div class="gallery-card-footer">
-                    ${art.price
-                        ? `<span class="artwork-price">$${art.price}</span>`
-                        : `<span class="artwork-price price-request">Price on request</span>`}
-                    <a href="/contact?artwork=${encodeURIComponent(art.title)}" class="btn-inquire">Inquire</a>
-                </div>
-            `;
-
-            infoArea.addEventListener('click', (e) => {
-                if (e.target.closest('.btn-inquire')) {
-                    e.stopPropagation();
-                    return;
-                }
-                e.stopPropagation();
-                window.location.href = `/artwork/${art.id}`;
-            });
-
-            card.appendChild(photoArea);
-            card.appendChild(infoArea);
-            grid.appendChild(card);
-
-            if (hasMultiple) {
-                const prevBtn = card.querySelector(`.carousel-prev`);
-                const nextBtn = card.querySelector(`.carousel-next`);
-                const dots = card.querySelectorAll(`.carousel-dots .dot`);
-
-                const changeSlide = (direction) => {
-                    const imgs = card.querySelectorAll('.carousel-img');
-                    let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
-                    let newIndex = current + direction;
-                    if (newIndex < 0) newIndex = imgs.length - 1;
-                    if (newIndex >= imgs.length) newIndex = 0;
-                    setSlide(card, newIndex);
-                };
-
-                const setSlide = (card, index) => {
-                    const imgs = card.querySelectorAll('.carousel-img');
-                    const dots = card.querySelectorAll('.carousel-dots .dot');
-                    imgs.forEach((img, i) => img.classList.toggle('active', i === index));
-                    dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-                };
-
-                prevBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    changeSlide(-1);
-                });
-                nextBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    changeSlide(1);
-                });
-                dots.forEach((dot, idx) => {
-                    dot.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        setSlide(card, idx);
-                    });
-                });
-            }
-        });
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>"]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            if (m === '"') return '&quot;';
-            return m;
-        });
-    }
-
-    function initFilters() {
-        const btns = document.querySelectorAll('.filter-btn');
-        btns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const filter = btn.getAttribute('data-filter');
-                btns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const items = document.querySelectorAll('.gallery-item');
-                items.forEach(item => {
-                    if (filter === 'all' || item.getAttribute('data-category') === filter) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
-        });
-    }
-
-    // ---------- МОДАЛЬНОЕ ОКНО ----------
-    const modalOverlay = document.getElementById('artwork-modal');
-    const lightbox = document.getElementById('modal-lightbox');
-    const lightboxClose = document.getElementById('lightbox-close');
-
-    lightboxClose.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) closeModal();
-    });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
-    async function openArtworkModal(artworkId) {
-        try {
-            const res = await fetch(`/api/artwork/${artworkId}`);
-            const art = await res.json();
-            buildLightboxContent(art);
-            modalOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        } catch (err) {
-            console.error('Ошибка загрузки деталей:', err);
-        }
-    }
-
-    function closeModal() {
-        modalOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    function buildLightboxContent(art) {
-        const images = art.images && art.images.length > 0 ? art.images : [];
-        if (images.length === 0) return;
-        lightbox.innerHTML = `
-            <div class="lightbox-carousel" id="lightbox-carousel">
-                ${images.map(img => `<img src="/static/images/works/${img}" class="lightbox-slide" alt="${escapeHtml(art.title)}">`).join('')}
-                <div class="lightbox-controls">
-                    <button class="lightbox-btn" id="lightbox-prev">‹</button>
-                    <button class="lightbox-btn" id="lightbox-next">›</button>
-                </div>
-                <div class="lightbox-dots" id="lightbox-dots"></div>
-            </div>
-        `;
-        if (images.length > 1) {
-            initLightboxCarousel(images.length);
-        } else {
-            const controls = document.querySelector('.lightbox-controls');
-            const dots = document.getElementById('lightbox-dots');
-            if (controls) controls.style.display = 'none';
-            if (dots) dots.style.display = 'none';
-        }
-    }
-
-    function initLightboxCarousel(slideCount) {
-        const slides = document.querySelectorAll('.lightbox-slide');
-        const prevBtn = document.getElementById('lightbox-prev');
-        const nextBtn = document.getElementById('lightbox-next');
-        const dotsContainer = document.getElementById('lightbox-dots');
-        let currentSlide = 0;
-        dotsContainer.innerHTML = '';
-        for (let i = 0; i < slideCount; i++) {
-            const dot = document.createElement('span');
-            dot.className = 'dot';
-            if (i === 0) dot.classList.add('active');
-            dot.addEventListener('click', () => {
-                currentSlide = i;
-                updateSlide();
-            });
-            dotsContainer.appendChild(dot);
-        }
-        function updateSlide() {
-            slides.forEach((s, i) => {
-                s.style.display = i === currentSlide ? 'block' : 'none';
-            });
-            document.querySelectorAll('.lightbox-dots .dot').forEach((d, i) => {
-                d.classList.toggle('active', i === currentSlide);
-            });
-        }
-        updateSlide();
-        prevBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
-            updateSlide();
-        });
-        nextBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            currentSlide = (currentSlide + 1) % slideCount;
-            updateSlide();
-        });
-    }
-
-    loadArtworks();
-</script>
 {% endblock %}

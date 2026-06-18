@@ -5,7 +5,8 @@
 {% block content %}
 <section class="contact-page">
     <div class="container">
-        <h1 class="section-title">Contact me</h1>
+        <h1 class="section-title" style="text-align:left;">Contact me</h1>
+        <p class="section-subtitle" style="text-align:left;">I personally reply to every message.</p>
         <div class="contact-grid">
             <div class="contact-info">
                 <h2>Anastasia Zaitseva</h2>
@@ -13,27 +14,21 @@
                     <p><i class="fas fa-envelope"></i> <a href="mailto:anastasia@artmail.com">anastasia@artmail.com</a></p>
                 </div>
                 <div class="contact-bio">
-                    <p>Welcome to my cabinet of curiosities! I'm an artist inspired by new techniques and materials.
-                       Reach out to purchase an original work or to discuss a custom commission — I personally
-                       reply to every message.</p>
+                    <p>Welcome to my cabinet of curiosities! I'm an artist inspired by new techniques
+                       and materials. Reach out to purchase an original or to discuss a custom commission.</p>
                 </div>
                 <div class="contact-socials">
+                    <a href="#" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
                     <a href="#" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" target="_blank" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
-                    <a href="#" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
                 </div>
             </div>
             <div class="contact-form">
                 <form method="POST" action="/contact">
-                    <div class="form-group">
-                        <input type="text" name="name" placeholder="Your name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" name="email" placeholder="Your email" required>
-                    </div>
-                    <div class="form-group">
-                        <textarea name="message" rows="5" placeholder="Your message" required>{% if request.args.get('artwork') %}Hi! I'm interested in the artwork "{{ request.args.get('artwork') }}". Is it available?{% elif request.args.get('subject') == 'commission' %}Hi! I'd like to discuss a custom commission.{% elif request.args.get('subject') == 'gallery' %}Hi! I represent a gallery and would like to request your portfolio.{% endif %}</textarea>
-                    </div>
+                    <input type="text" name="name" placeholder="Your name" required>
+                    <input type="email" name="email" placeholder="Your email" required>
+                    <textarea name="message" rows="5" placeholder="Your message" required>{% if request.args.get('artwork') %}Hi! I'm interested in the artwork "{{ request.args.get('artwork') }}". Is it available?{% elif request.args.get('subject') == 'commission' %}Hi! I'd like to discuss a custom commission.{% elif request.args.get('subject') == 'gallery' %}Hi! I represent a gallery and would like to request your portfolio.{% endif %}</textarea>
                     <button type="submit" class="submit-btn">Send message</button>
                 </form>
             </div>

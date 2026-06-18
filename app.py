@@ -142,39 +142,12 @@ def add_column_if_not_exists(table, column, col_type):
 @app.route('/')
 def index():
     about = About.query.first()
-    paintings_count = Artwork.query.filter_by(category='oil').count()
-    mixed_media_count = Artwork.query.filter_by(category='mixed_media').count()
-    ceramics_count = Artwork.query.filter_by(category='ceramics').count()
-    embroidery_count = Artwork.query.filter_by(category='embroidery').count()
-    return render_template('index.html', about=about,
-                           paintings_count=paintings_count,
-                           mixed_media_count=mixed_media_count,
-                           ceramics_count=ceramics_count,
-                           embroidery_count=embroidery_count)
+    return render_template('index.html', about=about)
 
 
-@app.route('/paintings')
-def paintings():
-    artworks = Artwork.query.filter_by(category='oil').order_by(Artwork.year.desc()).all()
-    return render_template('gallery.html', artworks=artworks, title='Oil Paintings', category='oil')
-
-
-@app.route('/mixed-media')
-def mixed_media():
-    artworks = Artwork.query.filter_by(category='mixed_media').order_by(Artwork.year.desc()).all()
-    return render_template('gallery.html', artworks=artworks, title='Mixed Media', category='mixed_media')
-
-
-@app.route('/ceramics')
-def ceramics():
-    artworks = Artwork.query.filter_by(category='ceramics').order_by(Artwork.year.desc()).all()
-    return render_template('gallery.html', artworks=artworks, title='Ceramics', category='ceramics')
-
-
-@app.route('/embroidery')
-def embroidery():
-    artworks = Artwork.query.filter_by(category='embroidery').order_by(Artwork.year.desc()).all()
-    return render_template('gallery.html', artworks=artworks, title='Embroidery', category='embroidery')
+@app.route('/gallery')
+def gallery():
+    return render_template('gallery.html')
 
 
 @app.route('/about')
@@ -187,21 +160,25 @@ def about_page():
 def contact():
     if request.method == 'POST':
         name = request.form.get('name')
-        email = request.form.get('email')
-        message = request.form.get('message')
-        flash(f'Спасибо, {name}! Ваше сообщение отправлено.', 'success')
+        flash(f'Thank you, {name}! Your message has been sent.', 'success')
         return redirect(url_for('contact'))
     about = About.query.first()
     return render_template('contact.html', about=about)
 
 
+# Старые категорийные роуты можно оставить как редирект на gallery
+@app.route('/paintings')
+@app.route('/mixed-media')
+@app.route('/ceramics')
+@app.route('/embroidery')
+def legacy_category_redirect():
+    return redirect(url_for('gallery'))
+
+
 @app.route('/artwork/<int:id>')
 def artwork_detail(id):
-    artwork = Artwork.query.get_or_404(id)
-    primary_img = artwork.get_primary_image()
-    secondary_images = artwork.get_secondary_images()
-    return render_template('artwork_detail.html', artwork=artwork,
-                           primary=primary_img, secondary=secondary_images)
+    # старая ссылка ведёт на gallery с открытой модалкой
+    return redirect(url_for('gallery') + f'?artwork={id}')
 
 
 # ---------- АДМИН-ПАНЕЛЬ ----------
