@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text          # <--- ДОБАВИТЬ
 from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import datetime
@@ -128,11 +129,12 @@ def migrate_work_images():
 def add_column_if_not_exists(table, column, col_type):
     try:
         with db.engine.connect() as conn:
-            # Проверяем существование колонки через PRAGMA
-            result = conn.execute(f"PRAGMA table_info({table})")
+            # PRAGMA нужно оборачивать в text(), иначе SQLAlchemy 2.x кидает ошибку
+            result = conn.execute(text(f"PRAGMA table_info({table})"))
             columns = [row[1] for row in result]
             if column not in columns:
-                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}"))
+                conn.commit()
                 print(f"Добавлена колонка '{column}' в таблицу {table}")
     except Exception as e:
         print(f"Ошибка при добавлении колонки {column}: {e}")
@@ -156,17 +158,12 @@ def about_page():
     return render_template('about.html', about=about)
 
 
-@app.route('/contact', methods=['GET', 'POST'])
+@app.route('/contact')
 def contact():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        flash(f'Thank you, {name}! Your message has been sent.', 'success')
-        return redirect(url_for('contact'))
     about = About.query.first()
     return render_template('contact.html', about=about)
 
 
-# Старые категорийные роуты можно оставить как редирект на gallery
 @app.route('/paintings')
 @app.route('/mixed-media')
 @app.route('/ceramics')
@@ -177,7 +174,6 @@ def legacy_category_redirect():
 
 @app.route('/artwork/<int:id>')
 def artwork_detail(id):
-    # старая ссылка ведёт на gallery с открытой модалкой
     return redirect(url_for('gallery') + f'?artwork={id}')
 
 

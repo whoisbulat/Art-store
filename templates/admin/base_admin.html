@@ -2,99 +2,69 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Админ-панель</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · AZA.brain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #fef7e8;
-            margin: 0;
-            padding: 20px;
+        :root {
+            --graphite: #2b2b2b;
+            --graphite-hover: #444;
+            --line: #ececec;
+            --dim: #8a8a8a;
+            --font-head: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
         }
-        .admin-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 30px;
-            padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-        .logout {
-            float: right;
-            background: #7a6b63;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            text-decoration: none;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background: #e6dbcf;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-body); background: #fafafa; color: var(--graphite); font-weight: 300; padding: 3rem 1.5rem; }
+        .admin-container { max-width: 1100px; margin: 0 auto; background: #fff; border: 1px solid var(--line); padding: 3rem; }
+        .admin-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); margin-bottom: 2rem; }
+        .admin-head h1 { font-family: var(--font-head); font-weight: 400; font-size: 1.8rem; }
+        .logout { color: var(--dim); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.5px; transition: 0.2s; }
+        .logout:hover { color: var(--graphite); }
         .btn {
-            display: inline-block;
-            background: #b8a99a;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 30px;
-            text-decoration: none;
-            margin-bottom: 20px;
+            display: inline-block; background: var(--graphite); color: #fff; border: 1px solid var(--graphite);
+            padding: 0.7rem 1.6rem; text-decoration: none; font-size: 0.8rem; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 2px;
         }
-        .btn-secondary {
-            background: #7a6b63;
-            margin-left: 10px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
+        .btn:hover { background: var(--graphite-hover); border-color: var(--graphite-hover); }
+        .btn-outline { background: transparent; color: var(--graphite); }
+        .btn-outline:hover { background: var(--graphite); color: #fff; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+        th { font-weight: 500; color: var(--dim); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
+        .thumb { width: 54px; height: 54px; object-fit: cover; border-radius: 2px; }
+        .actions a { color: var(--dim); text-decoration: none; margin-right: 1rem; font-size: 0.85rem; transition: 0.2s; }
+        .actions a:hover { color: var(--graphite); }
+        label { display: block; margin: 1.2rem 0 0.4rem; font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--dim); }
         input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #e6dbcf;
-            border-radius: 20px;
-            font-family: inherit;
+            width: 100%; padding: 0.8rem; border: 1px solid var(--line); border-radius: 2px;
+            font-family: inherit; font-size: 0.95rem; font-weight: 300; background: #fff;
         }
-        button {
-            background: #b8a99a;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .flash {
-            background: #e1f0e8;
-            padding: 10px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--graphite); }
+        .flash { background: #f4f4f4; padding: 0.9rem; border-radius: 2px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .flash.danger { background: #f9eeee; }
+        .flash.success { background: #eef5ef; }
+        .back-link { display: inline-block; margin-top: 1.5rem; color: var(--dim); text-decoration: none; font-size: 0.85rem; }
+        .back-link:hover { color: var(--graphite); }
+        .current-images { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.8rem; }
+        .image-item { position: relative; width: 100px; text-align: center; }
+        .image-item img { width: 100%; height: 100px; object-fit: cover; border-radius: 2px; border: 2px solid transparent; }
+        .image-item.primary img { border-color: var(--graphite); }
+        .image-item .badge { position: absolute; top: 4px; left: 4px; background: var(--graphite); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.5px; }
+        .delete-img-btn { margin-top: 4px; color: #b04444; font-size: 11px; cursor: pointer; background: none; border: none; }
+        @media (max-width: 700px) { .admin-container { padding: 1.5rem; } body { padding: 1rem; } }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="admin-container">
-        <div style="overflow: auto; margin-bottom: 20px;">
-            <h2 style="float: left;">Панель администратора</h2>
-            <a href="{{ url_for('admin_logout') }}" class="logout">Выйти</a>
+        <div class="admin-head">
+            <h1>Admin Panel</h1>
+            <a href="{{ url_for('admin_logout') }}" class="logout"><i class="fas fa-arrow-right-from-bracket"></i> Выйти</a>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% for category, message in messages %}
-                <div class="flash">{{ message }}</div>
+                <div class="flash {{ category }}">{{ message }}</div>
             {% endfor %}
         {% endwith %}
         {% block content %}{% endblock %}

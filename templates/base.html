@@ -4,19 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Anastasia Zaitseva | Artist Portfolio{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=4">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
             <a href="/" class="logo">AZA.brain</a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/gallery">Gallery</a>
-                <a href="/contact">Contact</a>
+            <div class="nav-right">
+                <div class="nav-links">
+                    <a href="/" data-i18n="nav_home">Home</a>
+                    <a href="/gallery" data-i18n="nav_gallery">Gallery</a>
+                    <a href="/contact" data-i18n="nav_contact">Contact</a>
+                </div>
+                <div class="lang-switch">
+                    <a href="#" data-lang="en" class="active">EN</a>
+                    <span class="sep">/</span>
+                    <a href="#" data-lang="ru">RU</a>
+                </div>
             </div>
             <div class="hamburger">
                 <span></span><span></span><span></span>
@@ -44,7 +51,112 @@
         </div>
     </footer>
 
+    <!-- ===== ЛОКАЛИЗАЦИЯ ===== -->
     <script>
+        const I18N = {
+            en: {
+                nav_home: "Home",
+                nav_gallery: "Gallery",
+                nav_contact: "Contact",
+                hero_eyebrow: "Contemporary Artist · Original Works",
+                hero_subtitle: "Original paintings, ceramics & mixed-media pieces — each one created in a single copy. Inspired by experimentation with new techniques and materials.",
+                hero_view: "View gallery",
+                hero_commission: "Commission a piece",
+                how_title: "How buying works",
+                how_1_title: "Choose a piece",
+                how_1_text: "Pick an available original or request a custom commission.",
+                how_2_title: "Get in touch",
+                how_2_text: "Message me directly via Telegram, Instagram or email.",
+                how_3_title: "Safe delivery",
+                how_3_text: "Carefully packed and shipped worldwide with a certificate of authenticity.",
+                gal_title: "For galleries & collectors",
+                gal_lead: "I collaborate with galleries, interior designers and private collectors. Available for exhibitions, art fairs and commissioned collections.",
+                gal_f1_t: "Exhibitions",
+                gal_f1_p: "Exhibition-ready original works for galleries and fairs.",
+                gal_f2_t: "Press kit",
+                gal_f2_p: "High-resolution images and details available on request.",
+                gal_f3_t: "Commissions",
+                gal_f3_p: "Custom pieces created for private and interior projects.",
+                gal_btn: "Request portfolio",
+                gallery_title: "Gallery",
+                gallery_subtitle: "Each piece is an original, created in a single copy.",
+                f_all: "All works", f_oil: "Oil painting", f_mixed: "Mixed media", f_ceramics: "Ceramics", f_embroidery: "Embroidery",
+                contact_title: "Contact me",
+                contact_subtitle: "I personally reply to every message.",
+                contact_bio: "Welcome to my cabinet of curiosities! I'm an artist inspired by new techniques and materials. Reach out to purchase an original or to discuss a custom commission.",
+                ph_name: "Your name", ph_email: "Your email", ph_message: "Your message",
+                send: "Send message"
+            },
+            ru: {
+                nav_home: "Главная",
+                nav_gallery: "Галерея",
+                nav_contact: "Контакты",
+                hero_eyebrow: "Современный художник · Оригиналы",
+                hero_subtitle: "Оригинальные картины, керамика и mixed-media — каждая работа создана в единственном экземпляре. Меня вдохновляют эксперименты с новыми техниками и материалами.",
+                hero_view: "Смотреть галерею",
+                hero_commission: "Заказать работу",
+                how_title: "Как происходит покупка",
+                how_1_title: "Выберите работу",
+                how_1_text: "Выберите доступный оригинал или закажите индивидуальную работу.",
+                how_2_title: "Свяжитесь со мной",
+                how_2_text: "Напишите напрямую в Telegram, Instagram или на почту.",
+                how_3_title: "Безопасная доставка",
+                how_3_text: "Аккуратная упаковка и доставка по всему миру с сертификатом подлинности.",
+                gal_title: "Для галерей и коллекционеров",
+                gal_lead: "Сотрудничаю с галереями, дизайнерами интерьеров и частными коллекционерами. Открыта для выставок, ярмарок и заказных коллекций.",
+                gal_f1_t: "Выставки",
+                gal_f1_p: "Готовые к экспонированию оригинальные работы для галерей и ярмарок.",
+                gal_f2_t: "Пресс-кит",
+                gal_f2_p: "Изображения в высоком разрешении и детали — по зап��осу.",
+                gal_f3_t: "Заказы",
+                gal_f3_p: "Индивидуальные работы для частных и интерьерных проектов.",
+                gal_btn: "Запросить портфолио",
+                gallery_title: "Галерея",
+                gallery_subtitle: "Каждая работа — оригинал в единственном экземпляре.",
+                f_all: "Все работы", f_oil: "Масло", f_mixed: "Mixed media", f_ceramics: "Керамика", f_embroidery: "Вышивка",
+                contact_title: "Свяжитесь со мной",
+                contact_subtitle: "Я лично отвечаю на каждое сообщение.",
+                contact_bio: "Добро пожаловать в мой кабинет редкостей! Я художник, вдохновлённый новыми техниками и материалами. Напишите, чтобы приобрести оригинал или обсудить индивидуальный заказ.",
+                ph_name: "Ваше имя", ph_email: "Ваш email", ph_message: "Ваше сообщение",
+                send: "Отправить"
+            }
+        };
+
+        function applyLang(lang) {
+            document.documentElement.lang = lang;
+            // тексты
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (I18N[lang] && I18N[lang][key]) el.textContent = I18N[lang][key];
+            });
+            // плейсхолдеры
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                const key = el.getAttribute('data-i18n-ph');
+                if (I18N[lang] && I18N[lang][key]) el.setAttribute('placeholder', I18N[lang][key]);
+            });
+            // активная кнопка языка
+            document.querySelectorAll('.lang-switch a').forEach(a => {
+                a.classList.toggle('active', a.getAttribute('data-lang') === lang);
+            });
+            localStorage.setItem('site_lang', lang);
+            // событие для страниц (галерея перерисует карточки)
+            document.dispatchEvent(new CustomEvent('langchange', { detail: lang }));
+        }
+
+        document.querySelectorAll('.lang-switch a').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                applyLang(a.getAttribute('data-lang'));
+            });
+        });
+
+        // язык по умолчанию — EN
+        const savedLang = localStorage.getItem('site_lang') || 'en';
+        window.CURRENT_LANG = savedLang;
+        document.addEventListener('langchange', e => { window.CURRENT_LANG = e.detail; });
+        applyLang(savedLang);
+
+        // бургер-меню
         const hamburger = document.querySelector('.hamburger');
         const navLinks = document.querySelector('.nav-links');
         if (hamburger) {

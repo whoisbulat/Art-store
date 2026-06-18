@@ -2,29 +2,25 @@
 
 {% block title %}Gallery — Anastasia Zaitseva{% endblock %}
 
-{% block extra_head %}
-<meta name="description" content="Browse and buy original artworks by Anastasia Zaitseva — paintings, ceramics, mixed media and embroidery.">
-{% endblock %}
-
 {% block content %}
 <section class="gallery-section" style="padding-top:2rem;">
     <div class="container">
-        <h1 class="section-title">Gallery</h1>
-        <p class="section-subtitle">Each piece is an original, created in a single copy.</p>
+        <h1 class="section-title" data-i18n="gallery_title">Gallery</h1>
+        <p class="section-subtitle" data-i18n="gallery_subtitle">Each piece is an original, created in a single copy.</p>
 
         <div class="gallery-filters">
-            <button class="filter-btn active" data-filter="all">All works</button>
-            <button class="filter-btn" data-filter="oil">Oil painting</button>
-            <button class="filter-btn" data-filter="mixed_media">Mixed media</button>
-            <button class="filter-btn" data-filter="ceramics">Ceramics</button>
-            <button class="filter-btn" data-filter="embroidery">Embroidery</button>
+            <button class="filter-btn active" data-filter="all" data-i18n="f_all">All works</button>
+            <button class="filter-btn" data-filter="oil" data-i18n="f_oil">Oil painting</button>
+            <button class="filter-btn" data-filter="mixed_media" data-i18n="f_mixed">Mixed media</button>
+            <button class="filter-btn" data-filter="ceramics" data-i18n="f_ceramics">Ceramics</button>
+            <button class="filter-btn" data-filter="embroidery" data-i18n="f_embroidery">Embroidery</button>
         </div>
 
         <div class="gallery-grid" id="gallery-grid"></div>
     </div>
 </section>
 
-<!-- ===== МОДАЛЬНОЕ ОКНО ДЕТАЛЕЙ ===== -->
+<!-- МОДАЛЬНОЕ ОКНО -->
 <div class="detail-modal-overlay" id="detail-modal">
     <div class="detail-modal" id="detail-modal-box">
         <button class="detail-close" id="detail-close" aria-label="Close">&times;</button>
@@ -34,14 +30,28 @@
 </div>
 
 <script>
-    // ===== КОНФИГ КОНТАКТОВ (заполните своими данными) =====
+    // ===== КОНТАКТЫ =====
     const CONTACT = {
-        whatsapp: '79991234567',          // номер без + и пробелов
-        telegram: 'anastasia',            // username без @
-        email: 'anastasia@artmail.com'
+        instagram: 'https://instagram.com/aza.brain?igshid=YmMyMTA2M2Y=',   // ← ВПИШИТЕ СВОЙ
+        telegram: 'azabrain',
+        email: 'ushastiyzayas@mail.ru'
+    };
+
+    const DETAIL_I18N = {
+        en: { request:'Price on request', dim:'Dimensions', mat:'Materials', year:'Year', cat:'Category',
+              buy:'Buy / Inquire', copy:'Copy link to this artwork', copied:'Link copied!',
+              msg:(t,p)=>`Hello! I'm interested in the artwork "${t}", price ${p}. Is it available?` },
+        ru: { request:'Цена по запросу', dim:'Размеры', mat:'Материалы', year:'Год', cat:'Категория',
+              buy:'Купить / Связаться', copy:'Скопировать ссылку на работу', copied:'Ссылка скопирована!',
+              msg:(t,p)=>`Здравствуйте! Меня интересует картина "${t}", цена ${p}. Есть ли она в наличии?` }
+    };
+    const CAT_I18N = {
+        en: { oil:'Oil painting', mixed_media:'Mixed media', ceramics:'Ceramics', embroidery:'Embroidery' },
+        ru: { oil:'Масло', mixed_media:'Mixed media', ceramics:'Керамика', embroidery:'Вышивка' }
     };
 
     let artworksCache = [];
+    let currentArt = null;
 
     async function loadArtworks() {
         try {
@@ -50,15 +60,14 @@
             renderGallery(artworksCache);
             initFilters();
             handleDeepLink();
-        } catch (err) {
-            console.error('Ошибка загрузки работ:', err);
-        }
+        } catch (err) { console.error(err); }
     }
 
     function escapeHtml(str) {
         if (!str) return '';
         return String(str).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
     }
+    function L() { return DETAIL_I18N[window.CURRENT_LANG || 'en']; }
 
     function renderGallery(artworks) {
         const grid = document.getElementById('gallery-grid');
@@ -71,22 +80,17 @@
             const carouselHTML = `
                 <div class="carousel-container">
                     <div class="carousel-images">
-                        ${images.map((img, idx) => `
-                            <img src="/static/images/works/${img}" class="carousel-img ${idx === 0 ? 'active' : ''}" alt="${escapeHtml(art.title)} — ${escapeHtml(art.technique || art.category)}">
-                        `).join('')}
+                        ${images.map((img, idx) => `<img src="/static/images/works/${img}" class="carousel-img ${idx===0?'active':''}" alt="${escapeHtml(art.title)}">`).join('')}
                     </div>
                     ${hasMultiple ? `
                         <button class="carousel-prev">‹</button>
                         <button class="carousel-next">›</button>
-                        <div class="carousel-dots">
-                            ${images.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
-                        </div>` : ''}
+                        <div class="carousel-dots">${images.map((_,i)=>`<span class="dot ${i===0?'active':''}"></span>`).join('')}</div>` : ''}
                 </div>`;
 
             const card = document.createElement('div');
             card.className = 'gallery-item';
             card.setAttribute('data-category', art.category);
-            card.setAttribute('data-id', art.id);
 
             const photoArea = document.createElement('div');
             photoArea.className = 'gallery-photo-area';
@@ -95,21 +99,26 @@
 
             const infoArea = document.createElement('div');
             infoArea.className = 'gallery-info';
-            infoArea.style.cursor = 'pointer';
-            infoArea.innerHTML = `
-                <h3>${escapeHtml(art.title)}</h3>
-                <p>${escapeHtml(art.description || '')}</p>
-                <div class="gallery-meta">
-                    <span>${art.year || ''}</span>
-                    <span>${art.size || ''}</span>
-                    <span>${escapeHtml(art.technique || art.category)}</span>
-                </div>
-                <div class="gallery-card-footer">
-                    ${art.price ? `<span class="artwork-price">$${art.price}</span>`
-                                : `<span class="artwork-price price-request">Price on request</span>`}
-                    <span class="btn btn-outline" style="padding:0.5rem 1.4rem;font-size:0.7rem;">Details</span>
-                </div>`;
             infoArea.addEventListener('click', () => openDetail(art.id));
+
+            const priceHtml = art.price
+                ? `<span class="artwork-price">$${art.price}</span>`
+                : `<span class="artwork-price price-request">${L().request}</span>`;
+
+            // Цена СПРАВА от текста (название/описание слева)
+            infoArea.innerHTML = `
+                <div class="gallery-info-row">
+                    <div class="gallery-info-text">
+                        <h3>${escapeHtml(art.title)}</h3>
+                        <p>${escapeHtml(art.description || '')}</p>
+                        <div class="gallery-meta">
+                            <span>${art.year || ''}</span>
+                            <span>${art.size || ''}</span>
+                            <span>${escapeHtml(art.technique || art.category)}</span>
+                        </div>
+                    </div>
+                    <div class="gallery-info-price">${priceHtml}</div>
+                </div>`;
 
             card.appendChild(photoArea);
             card.appendChild(infoArea);
@@ -123,7 +132,6 @@
         const prevBtn = card.querySelector('.carousel-prev');
         const nextBtn = card.querySelector('.carousel-next');
         const dots = card.querySelectorAll('.carousel-dots .dot');
-
         const setSlide = (index) => {
             const imgs = card.querySelectorAll('.carousel-img');
             imgs.forEach((img, i) => img.classList.toggle('active', i === index));
@@ -132,8 +140,7 @@
         const change = (dir) => {
             const imgs = card.querySelectorAll('.carousel-img');
             let cur = Array.from(imgs).findIndex(i => i.classList.contains('active'));
-            let n = (cur + dir + imgs.length) % imgs.length;
-            setSlide(n);
+            setSlide((cur + dir + imgs.length) % imgs.length);
         };
         prevBtn.addEventListener('click', e => { e.stopPropagation(); change(-1); });
         nextBtn.addEventListener('click', e => { e.stopPropagation(); change(1); });
@@ -154,73 +161,71 @@
         });
     }
 
-    // ===== МОДАЛЬНОЕ ОКНО ДЕТАЛЕЙ =====
+    // ===== ДЕТАЛИ =====
     const overlay = document.getElementById('detail-modal');
     const imageSide = document.getElementById('detail-image-side');
     const infoSide = document.getElementById('detail-info-side');
-    const closeBtn = document.getElementById('detail-close');
-
-    closeBtn.addEventListener('click', closeDetail);
+    document.getElementById('detail-close').addEventListener('click', closeDetail);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeDetail(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
 
     async function openDetail(id) {
         try {
             const res = await fetch(`/api/artwork/${id}`);
-            const art = await res.json();
-            buildDetail(art);
+            currentArt = await res.json();
+            buildDetail(currentArt);
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
-            // обновляем URL для шеринга
             history.replaceState(null, '', `/gallery?artwork=${id}`);
         } catch (err) { console.error(err); }
     }
-
     function closeDetail() {
         overlay.classList.remove('active');
         document.body.style.overflow = '';
+        currentArt = null;
         history.replaceState(null, '', '/gallery');
     }
 
     function buildDetail(art) {
+        const t = L();
         const images = art.images || [];
-        const priceText = art.price ? `$${art.price}` : 'Price on request';
-
-        // сообщение для мессенджеров
-        const msg = `Здравствуйте! Меня интересует картина "${art.title}", цена ${art.price ? '$'+art.price : 'по запросу'}. Есть ли она в наличии?`;
-        const enc = encodeURIComponent(msg);
+        const priceText = art.price ? `$${art.price}` : t.request;
+        const priceForMsg = art.price ? `$${art.price}` : (window.CURRENT_LANG === 'ru' ? 'по запросу' : 'on request');
+        const enc = encodeURIComponent(t.msg(art.title, priceForMsg));
         const shareUrl = `${window.location.origin}/gallery?artwork=${art.id}`;
+        const catName = (CAT_I18N[window.CURRENT_LANG || 'en'][art.category]) || art.category;
 
-        // изображения
+        // ===== ГЛАВНОЕ ФОТО + МИНИАТЮРЫ (без карусели) =====
+        const mainImg = images[0] || '';
         imageSide.innerHTML = `
-            ${images.map((img, idx) => `<img src="/static/images/works/${img}" class="detail-slide ${idx===0?'active':''}" alt="${escapeHtml(art.title)}">`).join('')}
-            ${images.length > 1 ? `
-                <button class="detail-nav prev">‹</button>
-                <button class="detail-nav next">›</button>
-                <div class="detail-thumbs">
-                    ${images.map((_, idx) => `<span class="dot ${idx===0?'active':''}"></span>`).join('')}
-                </div>` : ''}
+            <div class="detail-gallery">
+                <div class="detail-main-wrap">
+                    <img src="/static/images/works/${mainImg}" class="detail-main-img" id="detail-main-img" alt="${escapeHtml(art.title)}">
+                </div>
+                ${images.length > 1 ? `
+                    <div class="detail-thumbs-row">
+                        ${images.map((img, idx) => `
+                            <img src="/static/images/works/${img}" class="detail-thumb ${idx===0?'active':''}" data-full="/static/images/works/${img}" alt="${escapeHtml(art.title)} ${idx+1}">
+                        `).join('')}
+                    </div>` : ''}
+            </div>
         `;
 
-        // инфо
         infoSide.innerHTML = `
             <h2>${escapeHtml(art.title)}</h2>
             <div class="detail-price ${art.price ? '' : 'request'}">${priceText}</div>
-
             <div class="detail-specs">
-                ${art.size ? specRow('Dimensions', art.size) : ''}
-                ${art.technique ? specRow('Materials', art.technique) : ''}
-                ${art.year ? specRow('Year', art.year) : ''}
-                ${specRow('Category', formatCategory(art.category))}
+                ${art.size ? specRow(t.dim, art.size) : ''}
+                ${art.technique ? specRow(t.mat, art.technique) : ''}
+                ${art.year ? specRow(t.year, art.year) : ''}
+                ${specRow(t.cat, catName)}
             </div>
-
             ${art.description ? `<div class="detail-description">${escapeHtml(art.description)}</div>` : ''}
-
             <div class="buy-block">
-                <p class="buy-label">Buy / Inquire</p>
+                <p class="buy-label">${t.buy}</p>
                 <div class="buy-buttons">
-                    <a class="buy-btn wa" href="https://wa.me/${CONTACT.whatsapp}?text=${enc}" target="_blank">
-                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    <a class="buy-btn ig" href="https://instagram.com/${CONTACT.instagram}" target="_blank">
+                        <i class="fab fa-instagram"></i> Instagram
                     </a>
                     <a class="buy-btn tg" href="https://t.me/${CONTACT.telegram}?text=${enc}" target="_blank">
                         <i class="fab fa-telegram"></i> Telegram
@@ -230,37 +235,26 @@
                     </a>
                 </div>
                 <button class="share-link" onclick="copyShare('${shareUrl}', this)">
-                    <i class="fas fa-link"></i> <span>Copy link to this artwork</span>
+                    <i class="fas fa-link"></i> <span>${t.copy}</span>
                 </button>
             </div>
         `;
 
-        if (images.length > 1) initDetailCarousel();
+        // переключение главного фото по миниатюрам
+        if (images.length > 1) {
+            const mainEl = document.getElementById('detail-main-img');
+            imageSide.querySelectorAll('.detail-thumb').forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    mainEl.src = thumb.getAttribute('data-full');
+                    imageSide.querySelectorAll('.detail-thumb').forEach(t => t.classList.remove('active'));
+                    thumb.classList.add('active');
+                });
+            });
+        }
     }
 
     function specRow(label, value) {
         return `<div class="spec-row"><span class="spec-label">${label}</span><span class="spec-value">${escapeHtml(value)}</span></div>`;
-    }
-
-    function formatCategory(cat) {
-        const map = { oil:'Oil painting', mixed_media:'Mixed media', ceramics:'Ceramics', embroidery:'Embroidery' };
-        return map[cat] || cat;
-    }
-
-    function initDetailCarousel() {
-        const slides = imageSide.querySelectorAll('.detail-slide');
-        const dots = imageSide.querySelectorAll('.detail-thumbs .dot');
-        const prev = imageSide.querySelector('.detail-nav.prev');
-        const next = imageSide.querySelector('.detail-nav.next');
-        let cur = 0;
-        const show = (i) => {
-            cur = (i + slides.length) % slides.length;
-            slides.forEach((s, idx) => s.classList.toggle('active', idx === cur));
-            dots.forEach((d, idx) => d.classList.toggle('active', idx === cur));
-        };
-        prev.addEventListener('click', () => show(cur - 1));
-        next.addEventListener('click', () => show(cur + 1));
-        dots.forEach((d, i) => d.addEventListener('click', () => show(i)));
     }
 
     function copyShare(url, btn) {
@@ -268,17 +262,21 @@
             const span = btn.querySelector('span');
             const original = span.textContent;
             btn.classList.add('copied');
-            span.textContent = 'Link copied!';
+            span.textContent = L().copied;
             setTimeout(() => { span.textContent = original; btn.classList.remove('copied'); }, 2000);
         });
     }
 
-    // ===== Прямая ссылка ?artwork=ID =====
     function handleDeepLink() {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('artwork');
+        const id = new URLSearchParams(window.location.search).get('artwork');
         if (id) openDetail(id);
     }
+
+    document.addEventListener('langchange', () => {
+        renderGallery(artworksCache);
+        initFilters();
+        if (currentArt && overlay.classList.contains('active')) buildDetail(currentArt);
+    });
 
     loadArtworks();
 </script>
