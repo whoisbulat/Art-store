@@ -41,7 +41,7 @@
 <script>
     // ===== КОНТАКТЫ =====
     const CONTACT = {
-        instagram: 'your_instagram',   // ← ВПИШИТЕ СВОЙ
+        instagram: 'your_instagram',
         telegram: 'whoisbulat',
         email: 'whoisbulat@mail.ru'
     };
@@ -62,8 +62,8 @@
     let artworksCache = [];
     let currentArt = null;
 
-    // состояние полноэкранного просмотра
-    let fsList = [];      // плоский список всех изображений всех работ [{src, title}]
+    // Список изображений ТОЛЬКО текущей открытой работы
+    let fsList = [];
     let fsIndex = 0;
 
     async function loadArtworks() {
@@ -72,7 +72,6 @@
             artworksCache = await res.json();
             renderGallery(artworksCache);
             initFilters();
-            buildFullscreenList();
             handleDeepLink();
         } catch (err) { console.error(err); }
     }
@@ -83,15 +82,15 @@
     }
     function L() { return DETAIL_I18N[window.CURRENT_LANG || 'en']; }
 
-    // плоский список ВСЕХ изображений всех работ для листания
-    function buildFullscreenList() {
-        fsList = [];
-        artworksCache.forEach(art => {
-            (art.images || []).forEach(img => {
-                fsList.push({ src: `/static/images/works/${img}`, title: art.title });
-            });
-        });
+    // ─── КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ───────────────────────────────────────────────
+    // Строим fsList только из изображений переданной работы (не всех работ)
+    function buildFullscreenList(art) {
+        fsList = (art.images || []).map(img => ({
+            src: `/static/images/works/${img}`,
+            title: art.title
+        }));
     }
+    // ────────────────────────────────────────────────────────────────────────
 
     function renderGallery(artworks) {
         const grid = document.getElementById('gallery-grid');
@@ -195,16 +194,21 @@
         try {
             const res = await fetch(`/api/artwork/${id}`);
             currentArt = await res.json();
+            // ─── Строим список изображений только для этой работы ───────────
+            buildFullscreenList(currentArt);
+            // ────────────────────────────────────────────────────────────────
             buildDetail(currentArt);
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
             history.replaceState(null, '', `/gallery?artwork=${id}`);
         } catch (err) { console.error(err); }
     }
+
     function closeDetail() {
         overlay.classList.remove('active');
         document.body.style.overflow = '';
         currentArt = null;
+        fsList = []; // очищаем список при закрытии
         history.replaceState(null, '', '/gallery');
     }
 
@@ -264,15 +268,18 @@
 
         const mainEl = document.getElementById('detail-main-img');
 
-        // клик по миниатюре — меняем главное фото
+        // клик по миниатюре — меняем главное фото и обновляем fsIndex
         if (images.length > 1) {
-            imageSide.querySelectorAll('.detail-thumb').forEach(thumb => {
+            imageSide.querySelectorAll('.detail-thumb').forEach((thumb, thumbIdx) => {
                 thumb.addEventListener('click', () => {
                     const full = thumb.getAttribute('data-full');
                     mainEl.src = full;
                     mainEl.setAttribute('data-src', full);
                     imageSide.querySelectorAll('.detail-thumb').forEach(t => t.classList.remove('active'));
                     thumb.classList.add('active');
+                    // ─── Синхронизируем fsIndex с выбранной миниатюрой ───────
+                    fsIndex = thumbIdx;
+                    // ────────────────────────────────────────────────────────
                 });
             });
         }
@@ -307,29 +314,43 @@
     fsBox.addEventListener('click', (e) => { if (e.target === fsBox) closeFullscreen(); });
 
     function openFullscreen(src) {
-        // находим индекс текущего изображения в общем списке
+        // Ищем индекс среди изображений ТОЛЬКО текущей работы
         const idx = fsList.findIndex(item => item.src === src);
         fsIndex = idx >= 0 ? idx : 0;
         showFsImage();
         fsBox.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
+
     function closeFullscreen() {
         fsBox.classList.remove('active');
-        // если модалка деталей открыта — оставляем её скролл-лок
         if (!overlay.classList.contains('active')) document.body.style.overflow = '';
     }
+
     function showFsImage() {
         if (!fsList.length) return;
         const item = fsList[fsIndex];
         fsImage.src = item.src;
         fsImage.alt = item.title;
-        fsCaption.textContent = item.title;
+        fsCaption.textContent = `${item.title}${fsList.length > 1 ? ` (${fsIndex + 1} / ${fsList.length})` : ''}`;
     }
+
     function fsNav(dir) {
         if (!fsList.length) return;
         fsIndex = (fsIndex + dir + fsList.length) % fsList.length;
         showFsImage();
+        // ─── Синхронизируем активную миниатюру в модалке ────────────────────
+        const thumbs = imageSide.querySelectorAll('.detail-thumb');
+        if (thumbs.length) {
+            thumbs.forEach((t, i) => t.classList.toggle('active', i === fsIndex));
+            // Обновляем главное фото в модалке
+            const mainEl = document.getElementById('detail-main-img');
+            if (mainEl) {
+                mainEl.src = fsList[fsIndex].src;
+                mainEl.setAttribute('data-src', fsList[fsIndex].src);
+            }
+        }
+        // ────────────────────────────────────────────────────────────────────
     }
 
     // ===== КЛАВИАТУРА =====
