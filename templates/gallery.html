@@ -20,7 +20,7 @@
     </div>
 </section>
 
-<!-- МОДАЛЬНОЕ ОКНО -->
+<!-- МОДАЛЬНОЕ ОКНО ДЕТАЛЕЙ -->
 <div class="detail-modal-overlay" id="detail-modal">
     <div class="detail-modal" id="detail-modal-box">
         <button class="detail-close" id="detail-close" aria-label="Close">&times;</button>
@@ -29,12 +29,21 @@
     </div>
 </div>
 
+<!-- ПОЛНОЭКРАННЫЙ LIGHTBOX -->
+<div class="fs-lightbox" id="fs-lightbox">
+    <button class="fs-close" id="fs-close" aria-label="Close">&times;</button>
+    <button class="fs-arrow fs-prev" id="fs-prev" aria-label="Previous">‹</button>
+    <img class="fs-image" id="fs-image" src="" alt="">
+    <button class="fs-arrow fs-next" id="fs-next" aria-label="Next">›</button>
+    <div class="fs-caption" id="fs-caption"></div>
+</div>
+
 <script>
     // ===== КОНТАКТЫ =====
     const CONTACT = {
-        instagram: 'https://instagram.com/aza.brain?igshid=YmMyMTA2M2Y=',   // ← ВПИШИТЕ СВОЙ
-        telegram: 'azabrain',
-        email: 'ushastiyzayas@mail.ru'
+        instagram: 'your_instagram',   // ← ВПИШИТЕ СВОЙ
+        telegram: 'whoisbulat',
+        email: 'whoisbulat@mail.ru'
     };
 
     const DETAIL_I18N = {
@@ -53,12 +62,17 @@
     let artworksCache = [];
     let currentArt = null;
 
+    // состояние полноэкранного просмотра
+    let fsList = [];      // плоский список всех изображений всех работ [{src, title}]
+    let fsIndex = 0;
+
     async function loadArtworks() {
         try {
             const res = await fetch('/api/artworks');
             artworksCache = await res.json();
             renderGallery(artworksCache);
             initFilters();
+            buildFullscreenList();
             handleDeepLink();
         } catch (err) { console.error(err); }
     }
@@ -68,6 +82,16 @@
         return String(str).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
     }
     function L() { return DETAIL_I18N[window.CURRENT_LANG || 'en']; }
+
+    // плоский список ВСЕХ изображений всех работ для листания
+    function buildFullscreenList() {
+        fsList = [];
+        artworksCache.forEach(art => {
+            (art.images || []).forEach(img => {
+                fsList.push({ src: `/static/images/works/${img}`, title: art.title });
+            });
+        });
+    }
 
     function renderGallery(artworks) {
         const grid = document.getElementById('gallery-grid');
@@ -105,7 +129,6 @@
                 ? `<span class="artwork-price">$${art.price}</span>`
                 : `<span class="artwork-price price-request">${L().request}</span>`;
 
-            // Цена СПРАВА от текста (название/описание слева)
             infoArea.innerHTML = `
                 <div class="gallery-info-row">
                     <div class="gallery-info-text">
@@ -161,13 +184,12 @@
         });
     }
 
-    // ===== ДЕТАЛИ =====
+    // ===== ДЕТАЛИ (модалка) =====
     const overlay = document.getElementById('detail-modal');
     const imageSide = document.getElementById('detail-image-side');
     const infoSide = document.getElementById('detail-info-side');
     document.getElementById('detail-close').addEventListener('click', closeDetail);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeDetail(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
 
     async function openDetail(id) {
         try {
@@ -195,12 +217,12 @@
         const shareUrl = `${window.location.origin}/gallery?artwork=${art.id}`;
         const catName = (CAT_I18N[window.CURRENT_LANG || 'en'][art.category]) || art.category;
 
-        // ===== ГЛАВНОЕ ФОТО + МИНИАТЮРЫ (без карусели) =====
         const mainImg = images[0] || '';
         imageSide.innerHTML = `
             <div class="detail-gallery">
                 <div class="detail-main-wrap">
-                    <img src="/static/images/works/${mainImg}" class="detail-main-img" id="detail-main-img" alt="${escapeHtml(art.title)}">
+                    <img src="/static/images/works/${mainImg}" class="detail-main-img" id="detail-main-img"
+                         data-src="/static/images/works/${mainImg}" alt="${escapeHtml(art.title)}">
                 </div>
                 ${images.length > 1 ? `
                     <div class="detail-thumbs-row">
@@ -240,17 +262,25 @@
             </div>
         `;
 
-        // переключение главного фото по миниатюрам
+        const mainEl = document.getElementById('detail-main-img');
+
+        // клик по миниатюре — меняем главное фото
         if (images.length > 1) {
-            const mainEl = document.getElementById('detail-main-img');
             imageSide.querySelectorAll('.detail-thumb').forEach(thumb => {
                 thumb.addEventListener('click', () => {
-                    mainEl.src = thumb.getAttribute('data-full');
+                    const full = thumb.getAttribute('data-full');
+                    mainEl.src = full;
+                    mainEl.setAttribute('data-src', full);
                     imageSide.querySelectorAll('.detail-thumb').forEach(t => t.classList.remove('active'));
                     thumb.classList.add('active');
                 });
             });
         }
+
+        // клик по главному фото — открываем полноэкранный lightbox
+        mainEl.addEventListener('click', () => {
+            openFullscreen(mainEl.getAttribute('data-src'));
+        });
     }
 
     function specRow(label, value) {
@@ -266,6 +296,52 @@
             setTimeout(() => { span.textContent = original; btn.classList.remove('copied'); }, 2000);
         });
     }
+
+    // ===== ПОЛНОЭКРАННЫЙ LIGHTBOX =====
+    const fsBox = document.getElementById('fs-lightbox');
+    const fsImage = document.getElementById('fs-image');
+    const fsCaption = document.getElementById('fs-caption');
+    document.getElementById('fs-close').addEventListener('click', closeFullscreen);
+    document.getElementById('fs-prev').addEventListener('click', (e) => { e.stopPropagation(); fsNav(-1); });
+    document.getElementById('fs-next').addEventListener('click', (e) => { e.stopPropagation(); fsNav(1); });
+    fsBox.addEventListener('click', (e) => { if (e.target === fsBox) closeFullscreen(); });
+
+    function openFullscreen(src) {
+        // находим индекс текущего изображения в общем списке
+        const idx = fsList.findIndex(item => item.src === src);
+        fsIndex = idx >= 0 ? idx : 0;
+        showFsImage();
+        fsBox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeFullscreen() {
+        fsBox.classList.remove('active');
+        // если модалка деталей открыта — оставляем её скролл-лок
+        if (!overlay.classList.contains('active')) document.body.style.overflow = '';
+    }
+    function showFsImage() {
+        if (!fsList.length) return;
+        const item = fsList[fsIndex];
+        fsImage.src = item.src;
+        fsImage.alt = item.title;
+        fsCaption.textContent = item.title;
+    }
+    function fsNav(dir) {
+        if (!fsList.length) return;
+        fsIndex = (fsIndex + dir + fsList.length) % fsList.length;
+        showFsImage();
+    }
+
+    // ===== КЛАВИАТУРА =====
+    document.addEventListener('keydown', (e) => {
+        if (fsBox.classList.contains('active')) {
+            if (e.key === 'Escape') closeFullscreen();
+            if (e.key === 'ArrowLeft') fsNav(-1);
+            if (e.key === 'ArrowRight') fsNav(1);
+            return;
+        }
+        if (e.key === 'Escape' && overlay.classList.contains('active')) closeDetail();
+    });
 
     function handleDeepLink() {
         const id = new URLSearchParams(window.location.search).get('artwork');
