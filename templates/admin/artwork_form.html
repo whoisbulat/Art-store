@@ -48,6 +48,9 @@
             <label>Размер (опционально)</label>
             <input type="text" name="size" value="{{ artwork.size if artwork else '' }}" placeholder="50x70 см, 30x40x20 см...">
 
+            <label>Цена (USD, опционально)</label>
+            <input type="number" name="price" value="{{ artwork.price if artwork else '' }}" placeholder="350">
+
             <label>Основное изображение {% if not artwork %}*{% endif %}</label>
             <input type="file" name="primary_image" accept="image/*" {% if not artwork %}required{% endif %}>
 

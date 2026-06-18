@@ -1,45 +1,50 @@
 {% extends "base.html" %}
 
+{% block title %}Anastasia Zaitseva — Contemporary Artist | Original Paintings{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Original contemporary paintings, ceramics and mixed media by Anastasia Zaitseva. Buy unique artworks or commission a custom piece.">
+<meta property="og:title" content="Anastasia Zaitseva — Contemporary Artist">
+<meta property="og:description" content="Unique original artworks for collectors and galleries.">
+<meta property="og:image" content="{{ url_for('static', filename='images/artist_placeholder.jpg', _external=True) }}">
+<meta property="og:type" content="website">
+{% endblock %}
+
 {% block content %}
-<div class="homepage-grid">
-    <!-- Левая колонка: Contact -->
-    <div class="contact-sidebar">
-        <h3 class="contact-heading">Contact</h3>
-        <div class="contact-icons-grid">
-            <a href="mailto:anastasia@artmail.com" class="contact-icon-link"><i class="fas fa-envelope"></i></a>
-            <a href="https://yandex.ru" target="_blank" class="contact-icon-link"><i class="fab fa-instagram"></i></a>
-            <a href="https://yandex.ru" target="_blank" class="contact-icon-link"><i class="fab fa-pinterest"></i></a>
-            <a href="https://yandex.ru" target="_blank" class="contact-icon-link"><i class="fab fa-vk"></i></a>
-            <a href="https://yandex.ru" target="_blank" class="contact-icon-link"><i class="fab fa-telegram"></i></a>
-            <a href="https://yandex.ru" target="_blank" class="contact-icon-link"><i class="fab fa-youtube"></i></a>
-        </div>
-    </div>
 
-    <!-- Центральная колонка: текст -->
-    <div class="center-text">
-        <h1 class="main-name">Anastasia Zaitseva</h1>
-        <p class="greeting">Welcome to my cabinet of curiosities ✨</p>
-        <p class="profession">Professional Being Contemporary Impressionist!</p>
-        <p class="bio-text">
-            I'm an artist. I'm inspired by exploring new techniques and materials.<br>
-            I love to experimenting with mixed media.<br>
-            All my works are unique and made in a single copy.
+<!-- ========== HERO ========== -->
+<section class="hero">
+    <div class="hero-content">
+        <p class="hero-eyebrow">Contemporary Artist · Original Works</p>
+        <h1 class="hero-title">Anastasia Zaitseva</h1>
+        <p class="hero-subtitle">
+            Original paintings, ceramics & mixed-media pieces — each one created
+            in a single copy. Inspired by experimentation with new techniques and materials.
         </p>
-        <a href="#art-store" class="cta-button">View Artworks</a>
-    </div>
-
-    <!-- Правая колонка: фото -->
-    <div class="artist-photo">
-        <div class="photo-frame">
-            <img src="{{ url_for('static', filename='images/artist_placeholder.jpg') }}" alt="Anastasia Zaitseva">
+        <div class="hero-actions">
+            <a href="#art-store" class="btn btn-primary">View artworks</a>
+            <a href="/contact?subject=commission" class="btn btn-outline">Commission a piece</a>
         </div>
     </div>
-</div>
+    <div class="hero-image">
+        <div class="hero-frame">
+            <img src="{{ url_for('static', filename='images/artist_placeholder.jpg') }}"
+                 alt="Anastasia Zaitseva, contemporary artist, in her studio">
+        </div>
+        <div class="hero-social">
+            <a href="mailto:anastasia@artmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            <a href="#" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" target="_blank" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+            <a href="#" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+        </div>
+    </div>
+</section>
 
-<!-- Галерея -->
+<!-- ========== ГАЛЕРЕЯ ========== -->
 <section id="art-store" class="gallery-section">
     <div class="container">
         <h2 class="section-title">Art store</h2>
+        <p class="section-subtitle">Browse available original works. Each piece is unique.</p>
         <div class="gallery-filters">
             <button class="filter-btn active" data-filter="all">All works</button>
             <button class="filter-btn" data-filter="oil">Oil painting</button>
@@ -51,28 +56,91 @@
     </div>
 </section>
 
-<!-- Модальное окно (только затемнение + карусель) -->
-<!-- Модальное окно (только затемнение + карусель) -->
-<div class="modal-overlay" id="artwork-modal">
-    <button class="lightbox-close" id="lightbox-close" aria-label="Закрыть">&times;</button>
-    <div class="modal-lightbox" id="modal-lightbox">
-        <!-- JS заполнит карусель -->
+<!-- ========== КАК КУПИТЬ ========== -->
+<section class="how-to-buy">
+    <div class="container">
+        <h2 class="section-title">How buying works</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <i class="fas fa-heart"></i>
+                <h3>1. Choose a piece</h3>
+                <p>Pick an available original or request a custom commission.</p>
+            </div>
+            <div class="step-card">
+                <i class="fas fa-comments"></i>
+                <h3>2. Get in touch</h3>
+                <p>I'll confirm availability, price and shipping details personally.</p>
+            </div>
+            <div class="step-card">
+                <i class="fas fa-shipping-fast"></i>
+                <h3>3. Safe delivery</h3>
+                <p>Carefully packed and shipped worldwide with a certificate of authenticity.</p>
+            </div>
+        </div>
     </div>
+</section>
+
+<!-- ========== ДЛЯ ГАЛЕРЕЙ И КОЛЛЕКЦИОНЕРОВ ========== -->
+<section class="for-galleries">
+    <div class="container for-galleries-inner">
+        <div>
+            <h2 class="section-title" style="text-align:left;">For galleries & collectors</h2>
+            <p>I collaborate with galleries, interior designers and private collectors.
+               Available for exhibitions, art fairs and commissioned collections.</p>
+            <ul class="gallery-list">
+                <li><i class="fas fa-check"></i> Exhibition-ready original works</li>
+                <li><i class="fas fa-check"></i> Press kit & high-resolution images on request</li>
+                <li><i class="fas fa-check"></i> Custom commissions for interiors</li>
+            </ul>
+            <a href="/contact?subject=gallery" class="btn btn-primary">Request portfolio</a>
+        </div>
+        <div class="for-galleries-img">
+            <img src="{{ url_for('static', filename='images/artist_placeholder.jpg') }}" alt="Artworks in exhibition space">
+        </div>
+    </div>
+</section>
+
+<!-- ========== ОТЗЫВЫ ========== -->
+<section class="testimonials">
+    <div class="container">
+        <h2 class="section-title">What collectors say</h2>
+        <div class="testimonials-grid">
+            <blockquote class="testimonial">
+                <p>"The painting transformed our living room. The texture in person is breathtaking."</p>
+                <cite>— Maria K., private collector</cite>
+            </blockquote>
+            <blockquote class="testimonial">
+                <p>"Professional, reliable and incredibly talented. A pleasure to work with."</p>
+                <cite>— Studio Lumen, interior design</cite>
+            </blockquote>
+        </div>
+    </div>
+</section>
+
+<!-- ========== ФИНАЛЬНЫЙ CTA ========== -->
+<section class="final-cta">
+    <div class="container">
+        <h2>Found something you love?</h2>
+        <p>Reach out to purchase an original or discuss a custom commission.</p>
+        <a href="/contact" class="btn btn-primary btn-lg">Contact the artist</a>
+    </div>
+</section>
+
+<!-- Модальное окно для фото (карусель) -->
+<div class="modal-overlay" id="artwork-modal">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+    <div class="modal-lightbox" id="modal-lightbox"></div>
 </div>
 
 <script>
     let artworksCache = [];
 
-    // Загрузка всех работ для галереи
     async function loadArtworks() {
         try {
             const res = await fetch('/api/artworks');
             artworksCache = await res.json();
             renderGallery(artworksCache);
-            if (!window._filtersInitialized) {
-                applyFilters();
-                window._filtersInitialized = true;
-            }
+            initFilters();
         } catch (err) {
             console.error('Ошибка загрузки работ:', err);
         }
@@ -83,32 +151,123 @@
         if (!grid) return;
         grid.innerHTML = '';
         artworks.forEach(art => {
+            const images = art.images || [];
+            const hasMultiple = images.length > 1;
+
+            const carouselHTML = `
+                <div class="carousel-container" data-id="${art.id}">
+                    <div class="carousel-images">
+                        ${images.map((img, idx) => `
+                            <img src="/static/images/works/${img}" class="carousel-img ${idx === 0 ? 'active' : ''}" data-index="${idx}" alt="${escapeHtml(art.title)} — ${escapeHtml(art.technique || art.category)}">
+                        `).join('')}
+                    </div>
+                    ${hasMultiple ? `
+                        <button class="carousel-prev" data-id="${art.id}">‹</button>
+                        <button class="carousel-next" data-id="${art.id}">›</button>
+                        <div class="carousel-dots">
+                            ${images.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
             const card = document.createElement('div');
             card.className = 'gallery-item';
             card.setAttribute('data-category', art.category);
             card.setAttribute('data-id', art.id);
-            card.style.cursor = 'pointer';
-            card.innerHTML = `
-                <div class="gallery-image">
-                    <img src="/static/images/works/${art.image_filename}" alt="${art.title}" onerror="this.src='/static/images/placeholder.jpg'">
+
+            const photoArea = document.createElement('div');
+            photoArea.className = 'gallery-photo-area';
+            photoArea.style.cursor = 'zoom-in';
+            photoArea.innerHTML = carouselHTML;
+            photoArea.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openArtworkModal(art.id);
+            });
+
+            const infoArea = document.createElement('div');
+            infoArea.className = 'gallery-info';
+            infoArea.style.cursor = 'pointer';
+            infoArea.innerHTML = `
+                <h3>${escapeHtml(art.title)}</h3>
+                <p>${escapeHtml(art.description || '')}</p>
+                <div class="gallery-meta">
+                    <span>${art.year || ''}</span>
+                    <span>${art.size || ''}</span>
+                    <span>${escapeHtml(art.technique || art.category)}</span>
                 </div>
-                <div class="gallery-info">
-                    <h3>${art.title}</h3>
-                    <p>${art.description || ''}</p>
-                    <div class="gallery-meta">
-                        <span>${art.year || ''}</span>
-                        <span>${art.size || ''}</span>
-                        <span>${art.technique || art.category}</span>
-                    </div>
+                <div class="gallery-card-footer">
+                    ${art.price
+                        ? `<span class="artwork-price">$${art.price}</span>`
+                        : `<span class="artwork-price price-request">Price on request</span>`}
+                    <a href="/contact?artwork=${encodeURIComponent(art.title)}" class="btn-inquire">Inquire</a>
                 </div>
             `;
-            card.addEventListener('click', () => openArtworkModal(art.id));
+
+            infoArea.addEventListener('click', (e) => {
+                if (e.target.closest('.btn-inquire')) {
+                    e.stopPropagation();
+                    return;
+                }
+                e.stopPropagation();
+                window.location.href = `/artwork/${art.id}`;
+            });
+
+            card.appendChild(photoArea);
+            card.appendChild(infoArea);
             grid.appendChild(card);
+
+            if (hasMultiple) {
+                const prevBtn = card.querySelector(`.carousel-prev`);
+                const nextBtn = card.querySelector(`.carousel-next`);
+                const dots = card.querySelectorAll(`.carousel-dots .dot`);
+
+                const changeSlide = (direction) => {
+                    const imgs = card.querySelectorAll('.carousel-img');
+                    let current = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+                    let newIndex = current + direction;
+                    if (newIndex < 0) newIndex = imgs.length - 1;
+                    if (newIndex >= imgs.length) newIndex = 0;
+                    setSlide(card, newIndex);
+                };
+
+                const setSlide = (card, index) => {
+                    const imgs = card.querySelectorAll('.carousel-img');
+                    const dots = card.querySelectorAll('.carousel-dots .dot');
+                    imgs.forEach((img, i) => img.classList.toggle('active', i === index));
+                    dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+                };
+
+                prevBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    changeSlide(-1);
+                });
+                nextBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    changeSlide(1);
+                });
+                dots.forEach((dot, idx) => {
+                    dot.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        setSlide(card, idx);
+                    });
+                });
+            }
         });
     }
 
-    // Фильтрация галереи
-    function applyFilters() {
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            if (m === '"') return '&quot;';
+            return m;
+        });
+    }
+
+    function initFilters() {
         const btns = document.querySelectorAll('.filter-btn');
         btns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -127,19 +286,15 @@
         });
     }
 
-    // ---------- МОДАЛЬНОЕ ОКНО (LIGHTBOX) ----------
+    // ---------- МОДАЛЬНОЕ ОКНО ----------
     const modalOverlay = document.getElementById('artwork-modal');
     const lightbox = document.getElementById('modal-lightbox');
     const lightboxClose = document.getElementById('lightbox-close');
 
-lightboxClose.addEventListener('click', closeModal);
-
-    // Закрытие по клику на фон
+    lightboxClose.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) closeModal();
     });
-
-    // Закрытие по клавише Esc
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
             closeModal();
@@ -166,10 +321,9 @@ lightboxClose.addEventListener('click', closeModal);
     function buildLightboxContent(art) {
         const images = art.images && art.images.length > 0 ? art.images : [];
         if (images.length === 0) return;
-
         lightbox.innerHTML = `
             <div class="lightbox-carousel" id="lightbox-carousel">
-                ${images.map(img => `<img src="/static/images/works/${img}" class="lightbox-slide" alt="${art.title}">`).join('')}
+                ${images.map(img => `<img src="/static/images/works/${img}" class="lightbox-slide" alt="${escapeHtml(art.title)}">`).join('')}
                 <div class="lightbox-controls">
                     <button class="lightbox-btn" id="lightbox-prev">‹</button>
                     <button class="lightbox-btn" id="lightbox-next">›</button>
@@ -177,13 +331,13 @@ lightboxClose.addEventListener('click', closeModal);
                 <div class="lightbox-dots" id="lightbox-dots"></div>
             </div>
         `;
-
         if (images.length > 1) {
             initLightboxCarousel(images.length);
         } else {
-            // Если только одно изображение, скрываем стрелки и точки
-            document.querySelector('.lightbox-controls').style.display = 'none';
-            document.getElementById('lightbox-dots').style.display = 'none';
+            const controls = document.querySelector('.lightbox-controls');
+            const dots = document.getElementById('lightbox-dots');
+            if (controls) controls.style.display = 'none';
+            if (dots) dots.style.display = 'none';
         }
     }
 
@@ -193,8 +347,6 @@ lightboxClose.addEventListener('click', closeModal);
         const nextBtn = document.getElementById('lightbox-next');
         const dotsContainer = document.getElementById('lightbox-dots');
         let currentSlide = 0;
-
-        // Создаём точки
         dotsContainer.innerHTML = '';
         for (let i = 0; i < slideCount; i++) {
             const dot = document.createElement('span');
@@ -206,7 +358,6 @@ lightboxClose.addEventListener('click', closeModal);
             });
             dotsContainer.appendChild(dot);
         }
-
         function updateSlide() {
             slides.forEach((s, i) => {
                 s.style.display = i === currentSlide ? 'block' : 'none';
@@ -215,15 +366,12 @@ lightboxClose.addEventListener('click', closeModal);
                 d.classList.toggle('active', i === currentSlide);
             });
         }
-
         updateSlide();
-
         prevBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // чтобы не закрыть модалку по клику на фон
+            e.stopPropagation();
             currentSlide = (currentSlide - 1 + slideCount) % slideCount;
             updateSlide();
         });
-
         nextBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             currentSlide = (currentSlide + 1) % slideCount;
@@ -231,7 +379,6 @@ lightboxClose.addEventListener('click', closeModal);
         });
     }
 
-    // Запуск
     loadArtworks();
 </script>
 {% endblock %}

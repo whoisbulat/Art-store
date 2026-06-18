@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AZA.brain | Artist Portfolio{% endblock %}</title>
+    <title>{% block title %}Anastasia Zaitseva | Artist Portfolio{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=2">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -15,8 +15,8 @@
             <a href="/" class="logo">AZA.brain</a>
             <div class="nav-links">
                 <a href="/#home">Home</a>
-                <a href="/contact">Contact</a>
                 <a href="/#art-store">Art store</a>
+                <a href="/contact">Contact</a>
             </div>
             <div class="hamburger">
                 <span></span><span></span><span></span>
@@ -40,17 +40,19 @@
 
     <footer class="footer">
         <div class="container">
-            <p class="copyright">© 2025 AZA.brain. Все права защищены.</p>
+            <p class="copyright">© 2025 Anastasia Zaitseva. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
         const hamburger = document.querySelector('.hamburger');
         const navLinks = document.querySelector('.nav-links');
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        });
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+        }
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>
