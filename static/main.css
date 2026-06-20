@@ -2,7 +2,7 @@
    ДОРОГОЙ МИНИМАЛИЗМ + PLAYFAIR ЗАГОЛОВКИ
    ============================================ */
 :root {
-    --bg-light: #ffffff;
+    --bg-light: #f6f6f6;
     --color-graphite: #2b2b2b;
     --color-graphite-hover: #444444;
     --color-accent: #2b2b2b;
@@ -11,6 +11,9 @@
     --color-line: #ececec;
     --border-light: #ececec;
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    --shadow-soft: 0 1px 3px rgba(0,0,0,0.03);
+    --shadow-card: 0 18px 40px -16px rgba(20, 18, 15, 0.16);
+    --shadow-card-hover: 0 28px 60px -18px rgba(20, 18, 15, 0.22);
     --font-heading: 'Playfair Display', 'Georgia', serif;
     --font-body: 'Inter', 'Helvetica Neue', sans-serif;
 }
@@ -19,7 +22,11 @@
 
 body {
     font-family: var(--font-body);
-    background: #ffffff;
+    /* Холодный серо-голубой галерейный фон с едва заметной текстурой холста */
+    background-color: var(--bg-light);
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(43,43,43,0.035) 1px, transparent 0);
+    background-size: 22px 22px;
     color: var(--color-text);
     line-height: 1.7;
     padding-top: 90px;
@@ -115,15 +122,26 @@ body {
     letter-spacing: 1px;
     text-transform: uppercase;
     font-weight: 400;
-    transition: 0.3s;
+    transition: all 0.4s ease;
     cursor: pointer;
     border: 1px solid var(--color-graphite);
     font-family: var(--font-body);
+    position: relative;
 }
 .btn-primary { background: var(--color-graphite); color: #fff; }
-.btn-primary:hover { background: var(--color-graphite-hover); border-color: var(--color-graphite-hover); }
+.btn-primary:hover {
+    background: var(--color-graphite-hover);
+    border-color: var(--color-graphite-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,0.35);
+}
 .btn-outline { background: transparent; color: var(--color-graphite); }
-.btn-outline:hover { background: var(--color-graphite); color: #fff; }
+.btn-outline:hover {
+    background: var(--color-graphite);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,0.25);
+}
 .btn-lg { padding: 1.1rem 3rem; }
 
 /* ========== HERO ========== */
@@ -136,7 +154,22 @@ body {
     margin: 0 auto 6rem;
     padding: 4rem 2rem 0;
     min-height: 75vh;
+    position: relative;
 }
+/* Мягкий студийный свет, направленный на изображение художницы */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 8%;
+    width: 60%;
+    height: 90%;
+    transform: translateY(-50%);
+    background: radial-gradient(ellipse at center, rgba(196, 168, 130, 0.16) 0%, rgba(196, 168, 130, 0.05) 45%, transparent 72%);
+    pointer-events: none;
+    z-index: 0;
+}
+.hero-content, .hero-image { position: relative; z-index: 1; }
 .hero-eyebrow {
     text-transform: uppercase;
     letter-spacing: 3px;
@@ -162,7 +195,18 @@ body {
 .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
 
 .hero-image { position: relative; }
-.hero-frame { overflow: hidden; }
+.hero-frame {
+    overflow: hidden;
+    background: #fff;
+    padding: 14px;
+    border: 1px solid var(--color-line);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+.hero-frame:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
+}
 .hero-frame img {
     width: 100%;
     display: block;
@@ -197,13 +241,13 @@ body {
 }
 
 /* ========== ГАЛЕРЕЯ ========== */
-.gallery-section { padding: 5rem 0; }
+.gallery-section { padding: 6rem 0; }
 .gallery-filters {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
     flex-wrap: wrap;
-    margin-bottom: 3.5rem;
+    margin-bottom: 4rem;
 }
 .filter-btn {
     background: transparent;
@@ -215,7 +259,7 @@ body {
     cursor: pointer;
     color: var(--color-dim);
     border-radius: 2px;
-    transition: 0.25s;
+    transition: all 0.4s ease;
     text-transform: uppercase;
 }
 .filter-btn.active, .filter-btn:hover {
@@ -224,30 +268,42 @@ body {
 }
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 3rem 2.5rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4rem 2.2rem;
 }
-.gallery-item { background: #fff; overflow: hidden; transition: 0.3s; position: relative; }
-.gallery-item:hover { transform: translateY(-5px); }
+.gallery-item {
+    background: #fff;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    position: relative;
+    padding: 10px;
+    border: 1px solid var(--color-line);
+    box-shadow: var(--shadow-card);
+}
+.gallery-item:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card-hover);
+}
 
 .carousel-container {
     position: relative;
     width: 100%;
-    height: 340px;
+    height: 280px;
     background: #f7f7f5;
     overflow: hidden;
 }
-.carousel-images { width: 100%; height: 100%; position: relative; }
+.carousel-images { width: 100%; height: 100%; position: relative; overflow: hidden; }
 .carousel-img {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.4s ease, transform 0.6s ease;
     z-index: 1;
 }
 .carousel-img.active { opacity: 1; z-index: 2; }
+.gallery-item:hover .carousel-img.active { transform: scale(1.045); }
 
 .carousel-prev, .carousel-next {
     position: absolute;
@@ -282,7 +338,7 @@ body {
 .carousel-dots .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.6); border-radius: 50%; cursor: pointer; transition: 0.2s; }
 .carousel-dots .dot.active { background: #fff; transform: scale(1.3); }
 
-.gallery-info { padding: 1.4rem 0.2rem 0; }
+.gallery-info { padding: 1.6rem 0.4rem 0.4rem; }
 .gallery-info h3 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 400; margin-bottom: 0.3rem; }
 .gallery-info p {
     color: var(--color-dim);
@@ -308,7 +364,7 @@ body {
 .gallery-info { cursor: pointer; }
 
 /* ========== FOR GALLERIES (текстовый, воздушный) ========== */
-.for-galleries { padding: 8rem 0; }
+.for-galleries { padding: 9rem 0; }
 .for-galleries-inner {
     max-width: 760px;
     margin: 0 auto;
@@ -335,7 +391,9 @@ body {
     flex: 1;
     padding: 2.5rem 1.5rem;
     border-left: 1px solid var(--color-line);
+    transition: all 0.4s ease;
 }
+.gallery-feature:hover { background: rgba(43,43,43,0.015); }
 .gallery-feature:first-child { border-left: none; }
 .gallery-feature h4 {
     font-family: var(--font-heading);
@@ -346,10 +404,12 @@ body {
 .gallery-feature p { font-size: 0.85rem; color: var(--color-dim); font-weight: 300; }
 
 /* ========== HOW TO BUY ========== */
-.how-to-buy { padding: 6rem 0; }
-.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
-.step-card { text-align: center; padding: 0 1rem; }
-.step-card i { font-size: 1.6rem; color: var(--color-graphite); margin-bottom: 1.2rem; display: block; }
+.how-to-buy { padding: 7rem 0; }
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; }
+.step-card { text-align: center; padding: 1.5rem 1rem; transition: all 0.4s ease; }
+.step-card:hover { transform: translateY(-4px); }
+.step-card i { font-size: 1.6rem; color: var(--color-graphite); margin-bottom: 1.2rem; display: block; transition: transform 0.4s ease; }
+.step-card:hover i { transform: scale(1.12); }
 .step-card h3 { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 400; margin-bottom: 0.6rem; }
 .step-card p { color: var(--color-dim); font-size: 0.9rem; font-weight: 300; }
 
@@ -426,7 +486,8 @@ body {
     grid-template-columns: 1.2fr 1fr;
     position: relative;
     transform: translateY(20px);
-    transition: transform 0.3s;
+    transition: transform 0.4s ease;
+    box-shadow: var(--shadow-card-hover);
 }
 .detail-modal-overlay.active .detail-modal { transform: translateY(0); }
 .detail-close {
@@ -501,10 +562,16 @@ body {
     text-decoration: none;
     color: var(--color-graphite);
     font-size: 0.85rem;
-    transition: 0.25s;
+    transition: all 0.4s ease;
 }
-.buy-btn i { font-size: 1.1rem; }
-.buy-btn:hover { background: var(--color-graphite); color: #fff; border-color: var(--color-graphite); }
+.buy-btn i { font-size: 1.1rem; transition: color 0.4s ease; }
+.buy-btn:hover {
+    background: var(--color-graphite);
+    color: #fff;
+    border-color: var(--color-graphite);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,0.3);
+}
 .buy-btn.ig i { color: #E4405F; }
 .buy-btn.tg i { color: #26A5E4; }
 .buy-btn.em i { color: var(--color-graphite); }
@@ -522,18 +589,25 @@ body {
 /* ============================================
    АДАПТИВ
    ============================================ */
+@media (max-width: 1100px) {
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; text-align: center; gap: 3rem; padding-top: 2rem; min-height: auto; }
     .hero-title { font-size: 3rem; }
     .hero-actions { justify-content: center; }
     .hero-subtitle { margin: 0 auto 2.5rem; }
     .steps-grid, .contact-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
     .gallery-features { flex-direction: column; }
     .gallery-feature { border-left: none; border-top: 1px solid var(--color-line); }
     .gallery-feature:first-child { border-top: none; }
     .detail-modal { grid-template-columns: 1fr; max-height: 92vh; }
     .detail-image-side { min-height: 300px; }
     .detail-info-side { padding: 2rem 1.5rem; }
+}
+@media (max-width: 560px) {
+    .gallery-grid { grid-template-columns: 1fr; gap: 3rem; }
 }
 @media (max-width: 768px) {
     body { padding-top: 70px; }
@@ -583,9 +657,9 @@ body {
 
 /* --- Цена СПРАВА от текста в карточке --- */
 .gallery-info {
-    padding: 1.4rem 0.2rem 0;
+    padding: 1.6rem 0.4rem 0.4rem;
     border-top: 1px solid var(--color-line);
-    margin-top: 1.2rem;
+    margin-top: 1.4rem;
 }
 .gallery-info-row {
     display: flex;
@@ -630,7 +704,9 @@ body {
     max-height: 60vh;
     object-fit: contain;
     display: block;
+    transition: transform 0.4s ease;
 }
+.detail-main-wrap:hover .detail-main-img { transform: scale(1.03); }
 .detail-thumbs-row {
     display: flex;
     gap: 0.6rem;
@@ -644,10 +720,10 @@ body {
     cursor: pointer;
     border: 1px solid var(--color-line);
     opacity: 0.6;
-    transition: 0.2s;
+    transition: all 0.4s ease;
     border-radius: 2px;
 }
-.detail-thumb:hover { opacity: 1; }
+.detail-thumb:hover { opacity: 1; transform: scale(1.08); }
 .detail-thumb.active { opacity: 1; border-color: var(--color-graphite); }
 
 /* --- СТРАНИЦА КОНТАКТОВ (художественная) --- */
@@ -683,8 +759,10 @@ body {
     padding: 4rem 3.5rem;
     text-align: center;
     max-width: 460px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.4s ease;
 }
+.contact-card:hover { box-shadow: var(--shadow-card-hover); }
 .contact-eyebrow {
     text-transform: uppercase;
     letter-spacing: 3px;
