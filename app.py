@@ -1,14 +1,16 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text          # <--- ДОБАВИТЬ
+from sqlalchemy import text
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
-import hashlib
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-this'
+# В проде обязательно задайте свой секретный ключ через переменную окружения,
+# иначе сессии (в т.ч. вход в админку) станут небезопасными.
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -52,6 +54,31 @@ class Artwork(db.Model):
     def get_secondary_images(self):
         return [img for img in self.images if not img.is_primary]
 
+    def ordered_image_filenames(self):
+        """Список файлов: сначала основное фото, затем остальные."""
+        primary = self.get_primary_image()
+        secondary = self.get_secondary_images()
+        filenames = []
+        if primary:
+            filenames.append(primary.filename)
+        elif self.image_filename:
+            filenames.append(self.image_filename)
+        filenames.extend(img.filename for img in secondary)
+        return filenames
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description or None,
+            'year': self.year,
+            'category': self.category,
+            'technique': self.technique or None,
+            'size': self.size or None,
+            'price': self.price,
+            'images': self.ordered_image_filenames(),
+        }
+
 
 class About(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -65,7 +92,7 @@ class About(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
 
 
 # ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
@@ -85,7 +112,9 @@ def login_required(f):
 
 def init_admin_user():
     if not User.query.first():
-        admin = User(username='admin', password_hash=hashlib.md5('admin123'.encode()).hexdigest())
+        # ВАЖНО: смените пароль сразу после первого входа.
+        # Логин по умолчанию: admin / admin123
+        admin = User(username='admin', password_hash=generate_password_hash('admin123'))
         db.session.add(admin)
         db.session.commit()
 
@@ -140,6 +169,19 @@ def add_column_if_not_exists(table, column, col_type):
         print(f"Ошибка при добавлении колонки {column}: {e}")
 
 
+def run_startup_migrations():
+    """Создаёт таблицы (если их ещё нет) и прогоняет миграции/начальные данные.
+    Вызывается один раз при старте приложения."""
+    db.create_all()
+    add_column_if_not_exists('artwork', 'technique', 'VARCHAR(100)')
+    add_column_if_not_exists('artwork', 'size', 'VARCHAR(50)')
+    add_column_if_not_exists('artwork', 'price', 'INTEGER')
+    migrate_categories()
+    migrate_work_images()
+    init_admin_user()
+    init_about()
+
+
 # ---------- ПУБЛИЧНЫЕ МАРШРУТЫ ----------
 @app.route('/')
 def index():
@@ -177,6 +219,19 @@ def artwork_detail(id):
     return redirect(url_for('gallery') + f'?artwork={id}')
 
 
+# ---------- JSON API (используется галереей на фронтенде) ----------
+@app.route('/api/artworks')
+def api_artworks():
+    artworks = Artwork.query.order_by(Artwork.created_at.desc()).all()
+    return jsonify([a.to_dict() for a in artworks])
+
+
+@app.route('/api/artwork/<int:id>')
+def api_artwork(id):
+    artwork = Artwork.query.get_or_404(id)
+    return jsonify(artwork.to_dict())
+
+
 # ---------- АДМИН-ПАНЕЛЬ ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -184,9 +239,8 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
-        if user and user.password_hash == hashlib.md5(password.encode()).hexdigest():
+        if user and check_password_hash(user.password_hash, password):
             session['admin_logged_in'] = True
-            # flash('Добро пожаловать в админ-панель', 'success') # закомментировано, чтобы не вылезало на главной
             return redirect(url_for('admin_dashboard'))
         else:
             flash('Неверное имя пользователя или пароль', 'danger')
@@ -236,7 +290,7 @@ def add_artwork():
             title=title,
             description=description,
             image_filename=filename,
-            year=year if year else None,
+            year=int(year) if year else None,
             category=category,
             technique=technique if technique else None,
             size=size if size else None,
@@ -272,7 +326,8 @@ def edit_artwork(id):
     if request.method == 'POST':
         artwork.title = request.form.get('title')
         artwork.description = request.form.get('description')
-        artwork.year = request.form.get('year') or None
+        year_val = request.form.get('year')
+        artwork.year = int(year_val) if year_val else None
         artwork.category = request.form.get('category')
         artwork.technique = request.form.get('technique') or None
         artwork.size = request.form.get('size') or None
@@ -316,27 +371,26 @@ def edit_artwork(id):
 @login_required
 def delete_artwork(id):
     artwork = Artwork.query.get_or_404(id)
-    for img in artwork.images:
-        img_path = os.path.join(app.config['UPLOAD_FOLDER'], img.filename)
-        if os.path.exists(img_path):
-            os.remove(img_path)
+    for img in list(artwork.images):
+        path = os.path.join(app.config['UPLOAD_FOLDER'], img.filename)
+        if os.path.exists(path):
+            os.remove(path)
     db.session.delete(artwork)
     db.session.commit()
-    flash('Работа удалена', 'success')
+    flash('Работа удалена', 'info')
     return redirect(url_for('admin_dashboard'))
 
 
-@app.route('/admin/artwork/<int:artwork_id>/delete_image/<int:image_id>', methods=['POST'])
+@app.route('/admin/artwork/<int:artwork_id>/image/<int:image_id>/delete', methods=['POST'])
 @login_required
 def delete_work_image(artwork_id, image_id):
-    artwork = Artwork.query.get_or_404(artwork_id)
-    img = WorkImage.query.get_or_404(image_id)
-    if img.artwork_id != artwork.id:
-        flash('Изображение не принадлежит этой работе', 'danger')
+    img = WorkImage.query.filter_by(id=image_id, artwork_id=artwork_id).first_or_404()
+    if img.is_primary:
+        flash('Нельзя удалить основное изображение — сначала загрузите новое основное', 'danger')
         return redirect(url_for('edit_artwork', id=artwork_id))
-    img_path = os.path.join(app.config['UPLOAD_FOLDER'], img.filename)
-    if os.path.exists(img_path):
-        os.remove(img_path)
+    path = os.path.join(app.config['UPLOAD_FOLDER'], img.filename)
+    if os.path.exists(path):
+        os.remove(path)
     db.session.delete(img)
     db.session.commit()
     flash('Изображение удалено', 'success')
@@ -347,91 +401,34 @@ def delete_work_image(artwork_id, image_id):
 @login_required
 def edit_about():
     about = About.query.first()
-    if not about:
-        about = About()
+    if about is None:
+        about = About(bio='')
         db.session.add(about)
         db.session.commit()
 
     if request.method == 'POST':
-        about.bio = request.form.get('bio')
-        about.email = request.form.get('email')
-        about.instagram = request.form.get('instagram')
-        about.telegram = request.form.get('telegram')
+        about.bio = request.form.get('bio', '')
+        about.email = request.form.get('email') or None
+        about.instagram = request.form.get('instagram') or None
+        about.telegram = request.form.get('telegram') or None
 
-        if 'photo' in request.files:
-            file = request.files['photo']
-            if file and file.filename != '' and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
-                filename = timestamp + filename
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                about.photo_filename = filename
+        photo_file = request.files.get('photo')
+        if photo_file and photo_file.filename != '' and allowed_file(photo_file.filename):
+            filename = secure_filename(photo_file.filename)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+            filename = timestamp + filename
+            photo_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            about.photo_filename = filename
 
         db.session.commit()
-        flash('Информация обновлена', 'success')
         return redirect(url_for('admin_dashboard'))
 
     return render_template('admin/about_edit.html', about=about)
 
 
-@app.route('/api/artworks')
-def api_artworks():
-    artworks = Artwork.query.order_by(Artwork.created_at.desc()).all()
-    result = []
-    for a in artworks:
-        images = []
-        primary = a.get_primary_image()
-        if primary:
-            images.append(primary.filename)
-        secondary = a.get_secondary_images()
-        images.extend([img.filename for img in secondary])
-        result.append({
-            'id': a.id,
-            'title': a.title,
-            'description': a.description,
-            'year': a.year,
-            'category': a.category,
-            'technique': a.technique,
-            'size': a.size,
-            'price': a.price,
-            'images': images,
-            'primary_image': images[0] if images else ''
-        })
-    return result
-
-
-@app.route('/api/artwork/<int:id>')
-def api_artwork_detail(id):
-    artwork = Artwork.query.get_or_404(id)
-    primary = artwork.get_primary_image()
-    secondary = artwork.get_secondary_images()
-    images = []
-    if primary:
-        images.append(primary.filename)
-    for img in secondary:
-        images.append(img.filename)
-    return {
-        'id': artwork.id,
-        'title': artwork.title,
-        'description': artwork.description,
-        'year': artwork.year,
-        'size': artwork.size,
-        'price': artwork.price,
-        'technique': artwork.technique,
-        'category': artwork.category,
-        'images': images
-    }
-
-
-# ---------- ЗАПУСК И ИНИЦИАЛИЗАЦИЯ ----------
 with app.app_context():
-    db.create_all()
-    init_admin_user()
-    init_about()
-    # Добавляем колонку price, если её нет
-    add_column_if_not_exists('artwork', 'price', 'INTEGER')
-    migrate_categories()
-    migrate_work_images()
+    run_startup_migrations()
+
 
 if __name__ == '__main__':
     app.run(debug=True)

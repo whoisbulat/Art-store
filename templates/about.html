@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}About — Anastasia Zaitseva{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="About Anastasia Zaitseva — contemporary artist working in oil, ceramics and mixed media.">
+<style>
+    .about-section {
+        max-width: 1200px;
+        margin: 0 auto 6rem;
+        padding: 4rem 2rem 0;
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 5rem;
+        align-items: start;
+    }
+    .about-photo-frame {
+        background: #fff;
+        padding: 14px;
+        border: 1px solid var(--color-line);
+        box-shadow: var(--shadow-card);
+    }
+    .about-photo-frame img {
+        width: 100%;
+        display: block;
+        aspect-ratio: 4/5;
+        object-fit: cover;
+    }
+    .about-content { display: flex; flex-direction: column; align-items: flex-start; gap: 1.4rem; }
+    .about-eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: 0.85rem;
+        color: var(--color-dim);
+    }
+    .about-title {
+        font-family: var(--font-heading);
+        font-size: 3.3rem;
+        line-height: 1.1;
+        font-weight: 400;
+    }
+    .about-bio {
+        font-size: 1.08rem;
+        line-height: 1.8;
+        color: var(--color-text);
+        white-space: pre-line;
+    }
+    .about-socials { display: flex; gap: 1.4rem; font-size: 1.4rem; margin-top: 0.4rem; }
+    .about-socials a { color: var(--color-dim); transition: 0.25s; }
+    .about-socials a:hover { color: var(--color-graphite); }
+    .about-actions { margin-top: 0.6rem; }
+
+    @media (max-width: 900px) {
+        .about-section { grid-template-columns: 1fr; text-align: center; gap: 3rem; padding-top: 2rem; }
+        .about-content { align-items: center; }
+        .about-socials { justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="about-section">
+    <div class="about-photo-frame">
+        <img src="{{ url_for('static', filename='images/works/' + about.photo_filename) if about and about.photo_filename else url_for('static', filename='images/artist_placeholder.jpg') }}"
+             alt="Anastasia Zaitseva, contemporary artist">
+    </div>
+
+    <div class="about-content">
+        <p class="about-eyebrow" data-i18n="hero_eyebrow">Contemporary Artist · Original Works</p>
+        <h1 class="about-title" data-i18n="nav_about">About me</h1>
+        <p class="about-bio">{% if about and about.bio %}{{ about.bio }}{% else %}Welcome to my cabinet of curiosities! I'm an artist inspired by new techniques and materials — working across oil painting, ceramics and mixed media. Each piece is created in a single copy, shaped by experimentation rather than repetition.{% endif %}</p>
+
+        <div class="about-socials">
+            {% if about and about.email %}<a href="mailto:{{ about.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>{% endif %}
+            {% if about and about.telegram %}<a href="{{ about.telegram }}" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>{% endif %}
+            {% if about and about.instagram %}<a href="{{ about.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+        </div>
+
+        <div class="about-actions">
+            <a href="/gallery" class="btn btn-primary" data-i18n="hero_view">View gallery</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

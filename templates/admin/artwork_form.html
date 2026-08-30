@@ -36,7 +36,13 @@
     <label>Дополнительные изображения</label>
     <input type="file" name="additional_images" accept="image/*" multiple>
 
-    {% if artwork and artwork.images %}
+    <div style="margin-top:2rem;">
+        <button type="submit" class="btn">{% if artwork %}Сохранить{% else %}Добавить{% endif %}</button>
+    </div>
+</form>
+
+{% if artwork and artwork.images %}
+<div style="max-width:560px;">
     <label>Текущие изображения</label>
     <div class="current-images">
         {% for img in artwork.images %}
@@ -52,11 +58,8 @@
         </div>
         {% endfor %}
     </div>
-    {% endif %}
+</div>
+{% endif %}
 
-    <div style="margin-top:2rem;">
-        <button type="submit" class="btn">{% if artwork %}Сохранить{% else %}Добавить{% endif %}</button>
-    </div>
-</form>
 <a href="/admin" class="back-link">← Назад к списку</a>
 {% endblock %}

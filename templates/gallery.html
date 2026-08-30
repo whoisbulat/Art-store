@@ -105,10 +105,6 @@
                     <div class="carousel-images">
                         ${images.map((img, idx) => `<img src="/static/images/works/${img}" class="carousel-img ${idx===0?'active':''}" alt="${escapeHtml(art.title)}">`).join('')}
                     </div>
-                    ${hasMultiple ? `
-                        <button class="carousel-prev">‹</button>
-                        <button class="carousel-next">›</button>
-                        <div class="carousel-dots">${images.map((_,i)=>`<span class="dot ${i===0?'active':''}"></span>`).join('')}</div>` : ''}
                 </div>`;
 
             const card = document.createElement('div');
@@ -132,11 +128,6 @@
                 <div class="gallery-info-row">
                     <div class="gallery-info-text">
                         <h3>${escapeHtml(art.title)}</h3>
-                        <div class="gallery-meta">
-                            <span>${art.year || ''}</span>
-                            <span>${art.size || ''}</span>
-                            <span>${escapeHtml(art.technique || art.category)}</span>
-                        </div>
                     </div>
                     <div class="gallery-info-price">${priceHtml}</div>
                 </div>`;
@@ -150,22 +141,14 @@
     }
 
     function initCardCarousel(card) {
-        const prevBtn = card.querySelector('.carousel-prev');
-        const nextBtn = card.querySelector('.carousel-next');
-        const dots = card.querySelectorAll('.carousel-dots .dot');
-        const setSlide = (index) => {
-            const imgs = card.querySelectorAll('.carousel-img');
-            imgs.forEach((img, i) => img.classList.toggle('active', i === index));
-            dots.forEach((d, i) => d.classList.toggle('active', i === index));
-        };
-        const change = (dir) => {
-            const imgs = card.querySelectorAll('.carousel-img');
-            let cur = Array.from(imgs).findIndex(i => i.classList.contains('active'));
-            setSlide((cur + dir + imgs.length) % imgs.length);
-        };
-        prevBtn.addEventListener('click', e => { e.stopPropagation(); change(-1); });
-        nextBtn.addEventListener('click', e => { e.stopPropagation(); change(1); });
-        dots.forEach((d, i) => d.addEventListener('click', e => { e.stopPropagation(); setSlide(i); }));
+        const imgs = card.querySelectorAll('.carousel-img');
+        if (imgs.length < 2) return;
+        card.addEventListener('mouseenter', () => {
+            imgs.forEach((img, i) => img.classList.toggle('active', i === 1));
+        });
+        card.addEventListener('mouseleave', () => {
+            imgs.forEach((img, i) => img.classList.toggle('active', i === 0));
+        });
     }
 
     function initFilters() {
@@ -240,9 +223,9 @@
             <h2>${escapeHtml(art.title)}</h2>
             <div class="detail-price ${art.price ? '' : 'request'}">${priceText}</div>
             <div class="detail-specs">
-                ${art.size ? specRow(t.dim, art.size) : ''}
-                ${art.technique ? specRow(t.mat, art.technique) : ''}
-                ${art.year ? specRow(t.year, art.year) : ''}
+                ${art.size && art.size !== 'None' ? specRow(t.dim, art.size) : ''}
+                ${art.technique && art.technique !== 'None' ? specRow(t.mat, art.technique) : ''}
+                ${art.year && art.year !== 'None' ? specRow(t.year, art.year) : ''}
                 ${specRow(t.cat, catName)}
             </div>
             ${art.description ? `<div class="detail-description">${escapeHtml(art.description)}</div>` : ''}
