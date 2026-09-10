@@ -14,6 +14,9 @@
             <button class="filter-btn" data-filter="mixed_media" data-i18n="f_mixed">Mixed media</button>
             <button class="filter-btn" data-filter="ceramics" data-i18n="f_ceramics">Ceramics</button>
             <button class="filter-btn" data-filter="embroidery" data-i18n="f_embroidery">Embroidery</button>
+            <button class="filter-btn" data-filter="drawing" data-i18n="f_drawing">Drawing</button>
+            <button class="filter-btn" data-filter="watercolor" data-i18n="f_watercolor">Watercolor</button>
+            <button class="filter-btn" data-filter="toys" data-i18n="f_toys">Toys</button>
         </div>
 
         <div class="gallery-grid" id="gallery-grid"></div>
@@ -55,8 +58,8 @@
               msg:(t,p)=>`Здравствуйте! Меня интересует картина "${t}", цена ${p}. Есть ли она в наличии?` }
     };
     const CAT_I18N = {
-        en: { oil:'Oil painting', mixed_media:'Mixed media', ceramics:'Ceramics', embroidery:'Embroidery' },
-        ru: { oil:'Масло', mixed_media:'Mixed media', ceramics:'Керамика', embroidery:'Вышивка' }
+        en: { oil:'Oil painting', mixed_media:'Mixed media', ceramics:'Ceramics', embroidery:'Embroidery', drawing:'Drawing', watercolor:'Watercolor', toys:'Toys' },
+        ru: { oil:'Масло', mixed_media:'Mixed media', ceramics:'Керамика', embroidery:'Вышивка', drawing:'Графика', watercolor:'Акварель', toys:'Игрушки' }
     };
 
     let artworksCache = [];

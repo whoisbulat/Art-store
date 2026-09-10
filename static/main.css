@@ -147,13 +147,13 @@ body {
 /* ========== HERO ========== */
 .hero {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 5rem;
+    grid-template-columns: 1fr 0.8fr;
+    gap: 3.5rem;
     align-items: center;
     max-width: 1200px;
-    margin: 0 auto 6rem;
+    margin: 0 auto 3rem;
     padding: 4rem 2rem 0;
-    min-height: 75vh;
+    min-height: auto;
     position: relative;
 }
 /* Мягкий студийный свет, направленный на изображение художницы */
@@ -200,7 +200,7 @@ body {
 }
 .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem; justify-content: center; }
 
-.hero-image { position: relative; }
+.hero-image { position: relative; max-width: 320px; margin: 0 auto; }
 .hero-frame {
     overflow: hidden;
     background: #fff;
@@ -337,7 +337,7 @@ body {
 .gallery-info { cursor: pointer; }
 
 /* ========== FOR GALLERIES (текстовый, воздушный) ========== */
-.for-galleries { padding: 9rem 0; }
+.for-galleries { padding: 3rem 0 4rem; }
 .for-galleries-inner {
     max-width: 760px;
     margin: 0 auto;
@@ -377,7 +377,7 @@ body {
 .gallery-feature p { font-size: 0.85rem; color: var(--color-dim); font-weight: 300; }
 
 /* ========== HOW TO BUY ========== */
-.how-to-buy { padding: 7rem 0; }
+.how-to-buy { padding: 3rem 0; }
 .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; }
 .step-card { text-align: center; padding: 1.5rem 1rem; transition: all 0.4s ease; }
 .step-card:hover { transform: translateY(-4px); }

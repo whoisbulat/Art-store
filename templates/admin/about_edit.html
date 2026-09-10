@@ -14,6 +14,9 @@
     <label>Telegram (ссылка)</label>
     <input type="text" name="telegram" value="{{ about.telegram or '' }}">
 
+    <label>ВКонтакте (ссылка)</label>
+    <input type="text" name="vk" value="{{ about.vk or 'https://vk.ru/aza.brain2' }}">
+
     <label>Фото профиля</label>
     <input type="file" name="photo" accept="image/*">
     {% if about.photo_filename %}

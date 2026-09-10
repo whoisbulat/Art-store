@@ -87,6 +87,7 @@ class About(db.Model):
     email = db.Column(db.String(100), nullable=True)
     instagram = db.Column(db.String(200), nullable=True)
     telegram = db.Column(db.String(200), nullable=True)
+    vk = db.Column(db.String(200), nullable=True)
 
 
 class User(db.Model):
@@ -176,6 +177,7 @@ def run_startup_migrations():
     add_column_if_not_exists('artwork', 'technique', 'VARCHAR(100)')
     add_column_if_not_exists('artwork', 'size', 'VARCHAR(50)')
     add_column_if_not_exists('artwork', 'price', 'INTEGER')
+    add_column_if_not_exists('about', 'vk', 'VARCHAR(200)')
     migrate_categories()
     migrate_work_images()
     init_admin_user()
@@ -210,6 +212,9 @@ def contact():
 @app.route('/mixed-media')
 @app.route('/ceramics')
 @app.route('/embroidery')
+@app.route('/drawing')
+@app.route('/watercolor')
+@app.route('/toys')
 def legacy_category_redirect():
     return redirect(url_for('gallery'))
 
@@ -411,6 +416,7 @@ def edit_about():
         about.email = request.form.get('email') or None
         about.instagram = request.form.get('instagram') or None
         about.telegram = request.form.get('telegram') or None
+        about.vk = request.form.get('vk') or None
 
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename != '' and allowed_file(photo_file.filename):

@@ -73,6 +73,7 @@
         <div class="about-socials">
             {% if about and about.email %}<a href="mailto:{{ about.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>{% endif %}
             {% if about and about.telegram %}<a href="{{ about.telegram }}" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>{% endif %}
+            {% if about and about.vk %}<a href="{{ about.vk }}" target="_blank" rel="noopener" aria-label="VK"><i class="fab fa-vk"></i></a>{% endif %}
             {% if about and about.instagram %}<a href="{{ about.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
         </div>
 
