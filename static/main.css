@@ -401,13 +401,13 @@ body {
 
 /* ========== HOW TO BUY ========== */
 .how-to-buy { padding: 3rem 0; }
-.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; }
-.step-card { text-align: center; padding: 1.5rem 1rem; transition: all 0.4s ease; }
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; margin-top: 3rem; }
+.step-card { text-align: center; padding: 2rem 1.25rem; transition: all 0.4s ease; }
 .step-card:hover { transform: translateY(-4px); }
-.step-card i { font-size: 1.9rem; color: var(--color-graphite); margin-bottom: 1.2rem; display: block; transition: transform 0.4s ease; }
+.step-card i { font-size: 2.4rem; color: var(--color-graphite); margin-bottom: 1.2rem; display: block; transition: transform 0.4s ease; }
 .step-card:hover i { transform: scale(1.12); }
-.step-card h3 { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 400; margin-bottom: 0.7rem; }
-.step-card p { color: var(--color-dim); font-size: 0.95rem; font-weight: 300; }
+.step-card h3 { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.7rem; }
+.step-card p { color: var(--color-dim); font-size: 1.1rem; font-weight: 300; }
 
 /* ========== СТРАНИЦА КОНТАКТОВ ========== */
 .contact-page { padding: 4rem 0; }
@@ -594,7 +594,7 @@ body {
     .hero-title { font-size: 3rem; white-space: normal; }
     .hero-actions { justify-content: center; }
     .hero-subtitle { margin: 0 auto; }
-    .steps-grid, .contact-grid { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
     .gallery-grid { grid-template-columns: repeat(2, 1fr); }
     .gallery-features { flex-direction: column; }
     .gallery-feature { border-left: none; border-top: 1px solid var(--color-line); }
@@ -780,11 +780,11 @@ body {
     background: var(--color-graphite);
     margin: 0 auto 2rem;
 }
-.contact-lines { display: flex; flex-direction: column; gap: 1.2rem; }
+.contact-lines { display: flex; flex-direction: column; align-items: flex-start; gap: 1.2rem; width: max-content; margin: 0 auto; }
 .contact-line {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.7rem;
     color: var(--color-graphite);
     text-decoration: none;
@@ -792,8 +792,8 @@ body {
     font-weight: 300;
     transition: 0.25s;
 }
-.contact-line i { font-size: 1.15rem; color: var(--color-dim); transition: 0.25s; }
-.contact-line:hover { letter-spacing: 0.5px; }
+.contact-line i { width: 1.3rem; text-align: center; font-size: 1.15rem; color: var(--color-dim); transition: 0.25s; }
+.contact-line:hover { transform: translateX(4px); }
 .contact-line:hover i { color: var(--color-graphite); }
 
 @media (max-width: 600px) {
@@ -880,4 +880,42 @@ body {
     .fs-prev { left: 0.8rem; }
     .fs-next { right: 0.8rem; }
     .fs-close { top: 1rem; right: 1rem; font-size: 2rem; }
+}
+
+/* На странице контактов фон идёт вплотную к футеру, без белой полосы */
+body:has(.contact-art) .footer { margin-top: 0; }
+
+/* ============================================
+   АДАПТИВ: компактные отступы на планшетах и телефонах
+   ============================================ */
+@media (max-width: 900px) {
+    .steps-grid { gap: 1.5rem; margin-top: 2rem; }
+    .step-card { padding: 1.5rem 0.5rem; }
+    .step-card i { font-size: 2.1rem; }
+    .step-card h3 { font-size: 1.4rem; }
+    .step-card p { font-size: 1rem; }
+    .for-galleries { padding: 2.5rem 0 3rem; }
+    .footer { margin-top: 2.5rem; }
+}
+@media (max-width: 600px) {
+    .container { padding: 0 1.25rem; }
+    .hero { gap: 2rem; }
+    .section-title { font-size: 2rem; }
+    .section-divider { margin: 0.5rem 1.25rem; }
+
+    .how-to-buy { padding: 2rem 0; }
+    .steps-grid { grid-template-columns: 1fr; gap: 0.5rem; margin-top: 1.5rem; }
+    .step-card { padding: 1rem 0.5rem; }
+    .step-card i { font-size: 2rem; margin-bottom: 0.8rem; }
+    .step-card h3 { font-size: 1.35rem; margin-bottom: 0.4rem; }
+
+    .for-galleries { padding: 2rem 0 2.5rem; }
+    .for-galleries-lead { font-size: 1rem; line-height: 1.7; margin-bottom: 2rem; }
+
+    .footer { margin-top: 2rem; padding: 2rem 0; }
+
+    .contact-art { min-height: calc(100svh - 70px); padding: 2rem 0; }
+    .contact-card { padding: 2.5rem 1.5rem; }
+    .contact-name { margin-bottom: 1.2rem; }
+    .contact-divider { margin-bottom: 1.6rem; }
 }
